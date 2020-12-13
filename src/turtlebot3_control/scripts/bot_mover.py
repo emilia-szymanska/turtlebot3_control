@@ -11,9 +11,6 @@ LIN_VEL_STEP_SIZE = 0.01
 ANG_VEL_STEP_SIZE = 0.1
 
 
-def vels(target_linear_vel, target_angular_vel):
-    return "currently:\tlinear vel %s\t angular vel %s " % (target_linear_vel,target_angular_vel)
-
 
 def makeSimpleProfile(output, input, slop):
     if input > output:
@@ -71,36 +68,38 @@ class BotMover:
 
         twist = Twist()
         print(button)
-        if button == ord('r'):
+        if button == ord('u'):      # up
             target_linear_vel = checkLinearLimitVelocity(target_linear_vel + LIN_VEL_STEP_SIZE)
-            print(vels(target_linear_vel,target_angular_vel))
-        elif button == ord('d'):
+
+        elif button == ord('d'):    # down
             target_linear_vel = checkLinearLimitVelocity(target_linear_vel - LIN_VEL_STEP_SIZE)
-            print(vels(target_linear_vel,target_angular_vel))
-        elif button == ord('l'):
+
+        elif button == ord('l'):    # left
             target_angular_vel = checkAngularLimitVelocity(target_angular_vel + ANG_VEL_STEP_SIZE)
-            print(vels(target_linear_vel,target_angular_vel))
-        elif button == ord('r'):
+
+        elif button == ord('r'):    # right
             target_angular_vel = checkAngularLimitVelocity(target_angular_vel - ANG_VEL_STEP_SIZE)
-            print(vels(target_linear_vel,target_angular_vel))
-        elif button == ord('s'):
-            target_linear_vel   = 0.0
-            control_linear_vel  = 0.0
-            target_angular_vel  = 0.0
-            control_angular_vel = 0.0
-            print(vels(target_linear_vel, target_angular_vel))
+
+        elif button == ord('s'):    # stop
+            #target_linear_vel   = 0.0
+            #control_linear_vel  = 0.0
+            #target_angular_vel  = 0.0
+            #control_angular_vel = 0.0
+            #print(vels(target_linear_vel, target_angular_vel))
+            self.cmd_vel.linear.x = 0.0 
+            self.cmd_vel.angular.z = 0.0
+            print(f"currently:linear vel {self.cmd_vel.linear.x}, angular vel {self.cmd_vel.angular.z}")
+            self.move.publish(self.cmd_vel)
+            return
 
         control_linear_vel = makeSimpleProfile(control_linear_vel, target_linear_vel, (LIN_VEL_STEP_SIZE/2.0))
-        twist.linear.x = control_linear_vel 
-        twist.linear.y = 0.0 
-        twist.linear.z = 0.0
+        self.cmd_vel.linear.x += control_linear_vel 
 
         control_angular_vel = makeSimpleProfile(control_angular_vel, target_angular_vel, (ANG_VEL_STEP_SIZE/2.0))
-        twist.angular.x = 0.0 
-        twist.angular.y = 0.0 
-        twist.angular.z = control_angular_vel
+        self.cmd_vel.angular.z += control_angular_vel
+        print(f"currently:linear vel {self.cmd_vel.linear.x}, angular vel {self.cmd_vel.angular.z}")
 
-        self.move.publish(twist)
+        self.move.publish(self.cmd_vel)
 
 
     def run(self):
@@ -116,6 +115,7 @@ if __name__ == "__main__":
     print("l: " + str(ord('l')))
     print("u: " + str(ord('u')))
     print("d: " + str(ord('d')))
+    print("s: " + str(ord('s')))
 
     try:
         bot.run()
