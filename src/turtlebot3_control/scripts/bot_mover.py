@@ -2,7 +2,7 @@
 
 import rospy
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Char
+from std_msgs.msg import String
 
 BURGER_MAX_LIN_VEL = 0.22
 BURGER_MAX_ANG_VEL = 2.84
@@ -47,7 +47,7 @@ def checkAngularLimitVelocity(vel):
 class BotMover:
     def __init__(self):
         self.move = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
-        self.command = rospy.Subscriber('app_command', Char, self.command_callback)
+        self.command = rospy.Subscriber('app_command', String, self.command_callback)
         
         self.cmd_vel = Twist()
         self.cmd_vel.linear.x = 0
@@ -68,19 +68,19 @@ class BotMover:
 
         twist = Twist()
         print(button)
-        if button == ord('u'):      # up
+        if button == 'up':          # up
             target_linear_vel = checkLinearLimitVelocity(target_linear_vel + LIN_VEL_STEP_SIZE)
 
-        elif button == ord('d'):    # down
+        elif button == 'down':      # down
             target_linear_vel = checkLinearLimitVelocity(target_linear_vel - LIN_VEL_STEP_SIZE)
 
-        elif button == ord('l'):    # left
+        elif button == 'left':      # left
             target_angular_vel = checkAngularLimitVelocity(target_angular_vel + ANG_VEL_STEP_SIZE)
 
-        elif button == ord('r'):    # right
+        elif button == 'right':     # right
             target_angular_vel = checkAngularLimitVelocity(target_angular_vel - ANG_VEL_STEP_SIZE)
 
-        elif button == ord('s'):    # stop
+        elif button == 'stop':      # stop
             #target_linear_vel   = 0.0
             #control_linear_vel  = 0.0
             #target_angular_vel  = 0.0
