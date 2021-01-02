@@ -1,5 +1,6 @@
 
 import socket
+import time
 from std_msgs.msg import String
 
 LOCAL_IP         = "0.0.0.0"
@@ -9,6 +10,7 @@ MSG_FROM_SERVER  = "OK"
 START_MSG_CLIENT = "Hello UDP Server"
 END_MSG_CLIENT   = "Bye UDP Server"
 BYTES_TO_SEND    = str.encode(MSG_FROM_SERVER)
+MAX_TIMEOUT      = 20.0                              # in seconds
 
 
 class UDPServer:
@@ -34,23 +36,24 @@ class UDPServer:
 
                 address = bytes_address_pair[1]
     
-                client_msg = "Message from Client:{}".format(message)
-                client_ip  = "Client IP Address:{}".format(address)
+                print(f"Message from Client: {message}")
+                print(f"Client IP Address: {address}")
     
-                print(client_msg)
-                print(client_ip)
-
                 # sending a reply to client
                 self.udp_server_socket.sendto(BYTES_TO_SEND, address)
+
+                start = time.time()
 
                 while rospy.is_shutdown():
                     
                     rx_command = UDPServerSocket.recvfrom(buffer_size)
                     command = bytes_address_pair[0].decode()
-                    
-                    if command == END_MSG_CLIENT:
-                        break
+                    end = time.time()
 
+                    if command == END_MSG_CLIENT or end - start > MAX_TIMEOUT:
+                        break
+                    
+                    start = end
                     self.command.publish(command)
 
             
