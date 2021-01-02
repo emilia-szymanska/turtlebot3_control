@@ -2,50 +2,63 @@
 import socket
 from std_msgs.msg import String
 
-LOCAL_IP        = "0.0.0.0"
-LOCAL_PORT      = 20001
-BUFFER_SIZE     = 1024
-MSG_FROM_SERVER = "OK"
-BYTES_TO_SEND   = str.encode(MSG_FROM_SERVER)
+LOCAL_IP         = "0.0.0.0"
+LOCAL_PORT       = 20001
+BUFFER_SIZE      = 1024
+MSG_FROM_SERVER  = "OK"
+START_MSG_CLIENT = "Hello UDP Server"
+END_MSG_CLIENT   = "Bye UDP Server"
+BYTES_TO_SEND    = str.encode(MSG_FROM_SERVER)
 
 
 class UDPServer:
     def __init__(self):
         
-        self.udp_server_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)   # create a datagram socket
-        self.udp_server_socket.bind((LOCAL_IP, LOCAL_PORT))                                     # bind to address and ip
+        self.udp_server_socket = socket.socket(family = socket.AF_INET, type = socket.SOCK_DGRAM)       # create a datagram socket
+        self.udp_server_socket.bind((LOCAL_IP, LOCAL_PORT))                                             # bind to address and ip
         
         self.command = rospy.Publisher('app_command', String, queue_size = 1)
 
 
     def run(self):
+        
+        print("UDP server up and listening")
+        
         while not rospy.is_shutdown():
-            print("UDP server up and listening")
-            rospy.spin()
 
+            # listen for incoming datagrams
+            bytes_address_pair = UDPServerSocket.recvfrom(buffer_size)
+            message = bytes_address_pair[0].decode()
+                
+            if message == START_MSG_CLIENT:
 
-# Listen for incoming datagrams
-while(True):
-
-    bytesAddressPair = UDPServerSocket.recvfrom(bufferSize)
-    message = bytesAddressPair[0]
-    address = bytesAddressPair[1]
+                address = bytes_address_pair[1]
     
-    clientMsg = "Message from Client:{}".format(message)
-    clientIP  = "Client IP Address:{}".format(address)
+                client_msg = "Message from Client:{}".format(message)
+                client_ip  = "Client IP Address:{}".format(address)
     
-    print(clientMsg)
-    print(clientIP)
+                print(client_msg)
+                print(client_ip)
 
-    # Sending a reply to client
-    UDPServerSocket.sendto(bytesToSend, address)
+                # sending a reply to client
+                self.udp_server_socket.sendto(BYTES_TO_SEND, address)
 
+                while rospy.is_shutdown():
+                    
+                    rx_command = UDPServerSocket.recvfrom(buffer_size)
+                    command = bytes_address_pair[0].decode()
+                    
+                    if command == END_MSG_CLIENT:
+                        break
 
+                    self.command.publish(command)
+
+            
 
 
 if __name__ == "__main__":
+    
     rospy.init_node('udp_server')
-
     udp_server = UDPServer()
 
     try:
