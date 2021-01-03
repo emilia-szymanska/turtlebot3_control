@@ -34,16 +34,16 @@ class BotMover:
         button = msg.data
         
         if button == 'up':          # up
-            self.cmd_vel.linear.x = constrain(self.cmd_vel.linear.x + LIN_VEL_STEP_SIZE, "linear")
+            self.cmd_vel.linear.x = self.constrain(self.cmd_vel.linear.x + LIN_VEL_STEP_SIZE, "linear")
 
         elif button == 'down':      # down
-            self.cmd_vel.linear.x = constrain(self.cmd_vel.linear.x - LIN_VEL_STEP_SIZE, "linear")
+            self.cmd_vel.linear.x = self.constrain(self.cmd_vel.linear.x - LIN_VEL_STEP_SIZE, "linear")
 
         elif button == 'left':      # left
-            self.cmd_vel.angular.z = constrain(self.cmd_vel.angular.z + ANG_VEL_STEP_SIZE, "angular")
+            self.cmd_vel.angular.z = self.constrain(self.cmd_vel.angular.z + ANG_VEL_STEP_SIZE, "angular")
 
         elif button == 'right':     # right
-            self.cmd_vel.angular.z = constrain(self.cmd_vel.angular.z - ANG_VEL_STEP_SIZE, "angular") 
+            self.cmd_vel.angular.z = self.constrain(self.cmd_vel.angular.z - ANG_VEL_STEP_SIZE, "angular") 
 
         elif button == 'stop':      # stop
             self.cmd_vel.linear.x = 0.0 
