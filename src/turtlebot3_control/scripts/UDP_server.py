@@ -34,14 +34,14 @@ class UDPServer:
         while not rospy.is_shutdown():
 
             # listen for incoming datagrams
-            print("czekam")
+            print("waiting")
             bytes_address_pair = self.udp_server_socket.recvfrom(BUFFER_SIZE)
-            print("cos przyszlo")
+            print("something arrived")
             message = bytes_address_pair[0].decode()
             print(message)
                 
             if message == START_MSG_CLIENT:
-                print("Weszlo do ifa")
+                print("Good message!")
                 address = bytes_address_pair[1]
     
                 print(f"Message from Client: {message}")
@@ -59,7 +59,7 @@ class UDPServer:
                     end = time.time()
 
                     if command == END_MSG_CLIENT or end - start > MAX_TIMEOUT:
-                        print("koniec pracy, czekaj dalej")
+                        print("end of this connection")
                         break
                     
                     start = end
