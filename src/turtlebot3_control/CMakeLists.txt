@@ -104,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES turtlebot3_control
-#  CATKIN_DEPENDS gazebo_ros rospy turtlebot3_gazebo turtlebot3_simulations turtlebot3_teleop
+#  CATKIN_DEPENDS gazebo_ros rospy
 #  DEPENDS system_lib
 )
 
