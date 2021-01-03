@@ -12,5 +12,5 @@ export LD_LIBRARY_PATH="/home/emilia/turtlebot_control/devel/lib:$LD_LIBRARY_PAT
 export PKG_CONFIG_PATH="/home/emilia/turtlebot_control/devel/lib/pkgconfig:$PKG_CONFIG_PATH"
 export PWD='/home/emilia/turtlebot_control/build'
 export PYTHONPATH="/home/emilia/turtlebot_control/devel/lib/python3/dist-packages:$PYTHONPATH"
-export ROSLISP_PACKAGE_DIRECTORIES='/home/emilia/turtlebot_control/devel/share/common-lisp'
+export ROSLISP_PACKAGE_DIRECTORIES="/home/emilia/turtlebot_control/devel/share/common-lisp:$ROSLISP_PACKAGE_DIRECTORIES"
 export ROS_PACKAGE_PATH="/home/emilia/turtlebot_control/src:$ROS_PACKAGE_PATH"

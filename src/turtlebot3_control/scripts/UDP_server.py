@@ -1,24 +1,29 @@
+#!/usr/bin/env python3
 
 import socket
 import time
+import rospy
 from std_msgs.msg import String
 
 LOCAL_IP         = "0.0.0.0"
 LOCAL_PORT       = 20001
 BUFFER_SIZE      = 1024
 MSG_FROM_SERVER  = "OK"
-START_MSG_CLIENT = "Hello UDP Server"
-END_MSG_CLIENT   = "Bye UDP Server"
+START_MSG_CLIENT = "Hello UDP server"
+END_MSG_CLIENT   = "Bye UDP server"
 BYTES_TO_SEND    = str.encode(MSG_FROM_SERVER)
 MAX_TIMEOUT      = 20.0                              # in seconds
 
 
 class UDPServer:
     def __init__(self):
+        # create a datagram socket
+        self.udp_server_socket = socket.socket(family = socket.AF_INET, 
+                                                type = socket.SOCK_DGRAM)               
         
-        self.udp_server_socket = socket.socket(family = socket.AF_INET, type = socket.SOCK_DGRAM)       # create a datagram socket
-        self.udp_server_socket.bind((LOCAL_IP, LOCAL_PORT))                                             # bind to address and ip
-        
+        # bind to address and ip
+        self.udp_server_socket.bind((LOCAL_IP, LOCAL_PORT))
+
         self.command = rospy.Publisher('app_command', String, queue_size = 1)
 
 
@@ -29,11 +34,14 @@ class UDPServer:
         while not rospy.is_shutdown():
 
             # listen for incoming datagrams
-            bytes_address_pair = UDPServerSocket.recvfrom(buffer_size)
+            print("czekam")
+            bytes_address_pair = self.udp_server_socket.recvfrom(BUFFER_SIZE)
+            print("cos przyszlo")
             message = bytes_address_pair[0].decode()
+            print(message)
                 
             if message == START_MSG_CLIENT:
-
+                print("Weszlo do ifa")
                 address = bytes_address_pair[1]
     
                 print(f"Message from Client: {message}")
@@ -44,13 +52,14 @@ class UDPServer:
 
                 start = time.time()
 
-                while rospy.is_shutdown():
+                while not rospy.is_shutdown():
                     
-                    rx_command = UDPServerSocket.recvfrom(buffer_size)
-                    command = bytes_address_pair[0].decode()
+                    rx_command = self.udp_server_socket.recvfrom(BUFFER_SIZE)
+                    command = rx_command[0].decode()
                     end = time.time()
 
                     if command == END_MSG_CLIENT or end - start > MAX_TIMEOUT:
+                        print("koniec pracy, czekaj dalej")
                         break
                     
                     start = end

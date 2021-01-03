@@ -887,7 +887,7 @@ interactive_markers_DIR:PATH=/opt/ros/noetic/share/interactive_markers/cmake
 jsoncpp_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/jsoncpp
 
 //Path to a library.
-lib:FILEPATH=/opt/ros/noetic/lib/libxmlrpcpp.so
+lib:FILEPATH=/opt/ros/noetic/lib/libdynamic_reconfigure_config_init_mutex.so
 
 //The directory containing a CMake configuration file for message_filters.
 message_filters_DIR:PATH=/opt/ros/noetic/share/message_filters/cmake
@@ -1037,6 +1037,12 @@ turtlebot3_bringup_BINARY_DIR:STATIC=/home/emilia/turtlebot_control/build/turtle
 turtlebot3_bringup_SOURCE_DIR:STATIC=/home/emilia/turtlebot_control/src/turtlebot3/turtlebot3_bringup
 
 //Value Computed by CMake
+turtlebot3_control_BINARY_DIR:STATIC=/home/emilia/turtlebot_control/build/turtlebot3_control
+
+//Value Computed by CMake
+turtlebot3_control_SOURCE_DIR:STATIC=/home/emilia/turtlebot_control/src/turtlebot3_control
+
+//Value Computed by CMake
 turtlebot3_description_BINARY_DIR:STATIC=/home/emilia/turtlebot_control/build/turtlebot3/turtlebot3_description
 
 //Value Computed by CMake
@@ -1056,6 +1062,9 @@ turtlebot3_fake_SOURCE_DIR:STATIC=/home/emilia/turtlebot_control/src/turtlebot3_
 
 //Value Computed by CMake
 turtlebot3_gazebo_BINARY_DIR:STATIC=/home/emilia/turtlebot_control/build/turtlebot3_simulations/turtlebot3_gazebo
+
+//The directory containing a CMake configuration file for turtlebot3_gazebo.
+turtlebot3_gazebo_DIR:PATH=/home/emilia/turtlebot_control/devel/share/turtlebot3_gazebo/cmake
 
 //Value Computed by CMake
 turtlebot3_gazebo_SOURCE_DIR:STATIC=/home/emilia/turtlebot_control/src/turtlebot3_simulations/turtlebot3_gazebo
@@ -1077,6 +1086,9 @@ turtlebot3_navigation_SOURCE_DIR:STATIC=/home/emilia/turtlebot_control/src/turtl
 
 //Value Computed by CMake
 turtlebot3_simulations_BINARY_DIR:STATIC=/home/emilia/turtlebot_control/build/turtlebot3_simulations/turtlebot3_simulations
+
+//The directory containing a CMake configuration file for turtlebot3_simulations.
+turtlebot3_simulations_DIR:PATH=turtlebot3_simulations_DIR-NOTFOUND
 
 //Value Computed by CMake
 turtlebot3_simulations_SOURCE_DIR:STATIC=/home/emilia/turtlebot_control/src/turtlebot3_simulations/turtlebot3_simulations
@@ -1293,7 +1305,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=15
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=5
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP
@@ -1346,7 +1358,7 @@ CURL_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 CURL_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
 DART_DEFINITIONS:INTERNAL=
 DART_INCLUDE_DIRS:INTERNAL=/usr/include
-DART_LIBRARIES:INTERNAL=dart
+DART_LIBRARIES:INTERNAL=dart;dart
 //Boost min version requirement
 DART_MIN_BOOST_VERSION:INTERNAL=1.58.0
 DART_dart_DEFINITIONS:INTERNAL=
@@ -1363,7 +1375,7 @@ FIND_PACKAGE_MESSAGE_DETAILS_Boost:INTERNAL=[/usr/lib/x86_64-linux-gnu/cmake/Boo
 //Details about finding CURL
 FIND_PACKAGE_MESSAGE_DETAILS_CURL:INTERNAL=[/usr/lib/x86_64-linux-gnu/libcurl.so][/usr/include/x86_64-linux-gnu][c ][v7.68.0()]
 //Details about finding DART
-FIND_PACKAGE_MESSAGE_DETAILS_DART:INTERNAL=[/usr/include][dart][cfound components: dart ][v(6.6)]
+FIND_PACKAGE_MESSAGE_DETAILS_DART:INTERNAL=[/usr/include][dart;dart][cfound components: dart ][v(6.6)]
 //Details about finding DL
 FIND_PACKAGE_MESSAGE_DETAILS_DL:INTERNAL=[true][v()]
 //Details about finding JSONCPP

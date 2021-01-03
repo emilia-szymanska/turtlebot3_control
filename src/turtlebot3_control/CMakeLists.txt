@@ -10,9 +10,6 @@ project(turtlebot3_control)
 find_package(catkin REQUIRED COMPONENTS
   gazebo_ros
   rospy
-  turtlebot3_gazebo
-  turtlebot3_simulations
-  turtlebot3_teleop
 )
 
 ## System dependencies are found with CMake's conventions

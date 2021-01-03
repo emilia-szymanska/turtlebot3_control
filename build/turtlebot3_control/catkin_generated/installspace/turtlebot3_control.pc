@@ -1,0 +1,8 @@
+prefix=/home/emilia/turtlebot_control/install
+
+Name: turtlebot3_control
+Description: Description of turtlebot3_control
+Version: 1.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
