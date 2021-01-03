@@ -21,6 +21,10 @@ To source the workspace, run (from the root of this repository):
 ```
 source devel/setup.bash
 ```
+The diagram shown below represents the architecture of the whole project.
+
+![Image of Pipeline](https://github.com/emilia-szymanska/turtlebot_control/blob/master/pipeline_chart.png)
+
 
 ## Running the pipeline
 
