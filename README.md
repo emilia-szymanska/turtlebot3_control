@@ -37,7 +37,7 @@ roslaunch turtlebot3_control turtlebot3_app_control.launch
 
 The package `turtlebot3_control` contains:
 
-- `UDP_server` node (python): create a UDP server to receive commands from a client;
+- `udp_server` node (python): create a UDP server to receive commands from a client;
 - `bot_mover` node (python): publish messages on cmd\_vel topic based on commands received from the server.  
 
 

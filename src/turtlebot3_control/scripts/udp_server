@@ -30,11 +30,20 @@ class UDPServer:
 
         self.command = rospy.Publisher('app_command', String, queue_size = 1)
 
+
     def signal_handler(self, signal, frame):
+        '''
+        Deal with ctrl+C command while the server is listening
+        '''
+
         self.udp_server_socket.close()
         sys.exit(0)
 
+
     def run(self):
+        '''
+        Run the server, let it listen and react to messages
+        '''
         
         print("UDP server up and listening")
         
@@ -47,7 +56,8 @@ class UDPServer:
             message = bytes_address_pair[0].decode()
             print(message)
                 
-            if message == START_MSG_CLIENT:
+            # recieved a message from the app client
+            if message == START_MSG_CLIENT:                                                    
                 print("Good message!")
                 address = bytes_address_pair[1]
     
@@ -59,13 +69,14 @@ class UDPServer:
 
                 start = time.time()
 
+                # waiting for messages from the app (info which button is pressed)
                 while not rospy.is_shutdown():
-                    
                     rx_command = self.udp_server_socket.recvfrom(BUFFER_SIZE)
                     command = rx_command[0].decode()
                     end = time.time()
-
-                    if command == END_MSG_CLIENT or end - start > MAX_TIMEOUT:
+                    
+                    # app client ends the connection or doesn't send messages for a specific time 
+                    if command == END_MSG_CLIENT or end - start > MAX_TIMEOUT:     
                         print("end of this connection")
                         break
                     

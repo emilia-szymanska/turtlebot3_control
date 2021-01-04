@@ -30,7 +30,10 @@ class BotMover:
 
 
     def command_callback(self, msg):
-        
+        '''
+        Callback on /app_command subscriber - modify self.cmd_vel and publish it to /cmd_vel
+        '''
+
         button = msg.data
         
         if button == 'UP':
@@ -61,10 +64,14 @@ class BotMover:
 
 
     def constrain(self, input_value, vel_type):
-        if vel_type == "angular":
+        '''
+        Constrain the value of the cmd_vel commands with maximum possible values of velocities
+        '''
+
+        if vel_type == "angular":   # for angular velocity
             low  = -self.max_ang
             high =  self.max_ang 
-        else:
+        else:                       # for linear velocity
             low  = -self.max_lin
             high =  self.max_lin
 
@@ -79,6 +86,7 @@ class BotMover:
     def run(self):
         while not rospy.is_shutdown():
             rospy.spin()
+
 
 
 if __name__ == "__main__":
