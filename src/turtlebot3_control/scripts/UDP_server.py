@@ -3,6 +3,8 @@
 import socket
 import time
 import rospy
+import signal
+import sys
 from std_msgs.msg import String
 
 LOCAL_IP         = "0.0.0.0"
@@ -15,6 +17,7 @@ BYTES_TO_SEND    = str.encode(MSG_FROM_SERVER)
 MAX_TIMEOUT      = 20.0                              # in seconds
 
 
+
 class UDPServer:
     def __init__(self):
         # create a datagram socket
@@ -23,9 +26,13 @@ class UDPServer:
         
         # bind to address and ip
         self.udp_server_socket.bind((LOCAL_IP, LOCAL_PORT))
+        signal.signal(signal.SIGINT, self.signal_handler)
 
         self.command = rospy.Publisher('app_command', String, queue_size = 1)
 
+    def signal_handler(self, signal, frame):
+        self.udp_server_socket.close()
+        sys.exit(0)
 
     def run(self):
         
