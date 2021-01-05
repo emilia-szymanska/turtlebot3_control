@@ -7,10 +7,7 @@ from std_msgs.msg import String
 BURGER_MAX_LIN_VEL = 0.22
 BURGER_MAX_ANG_VEL = 2.84
 
-LIN_VEL_STEP_SIZE = 0.01
-ANG_VEL_STEP_SIZE = 0.1
-
-CONST_ANG_VEL = 0.11
+CONST_ANG_VEL = 1.42
 CONST_LIN_VEL = 0.11
 
 
@@ -33,26 +30,23 @@ class BotMover:
 
     def command_callback(self, msg):
         '''
-        Callback on /app_command subscriber - modify self.cmd_vel and publish it to /cmd_vel
+        Callback on /app_command subscriber - modify self.cmd_vel 
+        and publish it to /cmd_vel
         '''
 
         button = msg.data
         
         if button == 'up':
             self.cmd_vel.linear.x = CONST_LIN_VEL
-        #    self.cmd_vel.linear.x = self.constrain(self.cmd_vel.linear.x + LIN_VEL_STEP_SIZE, "linear")
 
         elif button == 'down':
             self.cmd_vel.linear.x = -CONST_LIN_VEL
-        #    self.cmd_vel.linear.x = self.constrain(self.cmd_vel.linear.x - LIN_VEL_STEP_SIZE, "linear")
 
         elif button == 'left':
             self.cmd_vel.angular.z = CONST_ANG_VEL
-        #    self.cmd_vel.angular.z = self.constrain(self.cmd_vel.angular.z + ANG_VEL_STEP_SIZE, "angular")
 
         elif button == 'right':
             self.cmd_vel.angular.z = -CONST_ANG_VEL
-        #    self.cmd_vel.angular.z = self.constrain(self.cmd_vel.angular.z - ANG_VEL_STEP_SIZE, "angular") 
 
         elif button == "none":
             self.cmd_vel.linear.x = 0.0 
@@ -71,27 +65,6 @@ class BotMover:
         print(f"Currently: linear vel {self.cmd_vel.linear.x}, angular vel {self.cmd_vel.angular.z}")
 
         self.move.publish(self.cmd_vel)
-       # self.move.publish(self.cmd_vel)
-
-
-    def constrain(self, input_value, vel_type):
-        '''
-        Constrain the value of the cmd_vel commands with maximum possible values of velocities
-        '''
-
-        if vel_type == "angular":   # for angular velocity
-            low  = -self.max_ang
-            high =  self.max_ang 
-        else:                       # for linear velocity
-            low  = -self.max_lin
-            high =  self.max_lin
-
-        if input_value < low:
-            return low
-        elif input_value > high:
-            return high
-        else:
-            return input_value
 
 
     def run(self):

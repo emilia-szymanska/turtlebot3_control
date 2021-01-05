@@ -53,7 +53,8 @@ class UDPServer:
                 print("UDP server up and listening")
                 bytes_address_pair = self.udp_server_socket.recvfrom(BUFFER_SIZE)
                 message = bytes_address_pair[0].decode()
-                
+                print(message)
+
                 # recieved a message from the app client
                 if message == START_MSG_CLIENT:                                                    
                     address = bytes_address_pair[1]
