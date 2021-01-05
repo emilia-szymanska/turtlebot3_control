@@ -10,6 +10,8 @@ BURGER_MAX_ANG_VEL = 2.84
 LIN_VEL_STEP_SIZE = 0.01
 ANG_VEL_STEP_SIZE = 0.1
 
+CONST_ANG_VEL = 0.11
+CONST_LIN_VEL = 0.11
 
 
 class BotMover:
@@ -36,31 +38,40 @@ class BotMover:
 
         button = msg.data
         
-        if button == 'UP':
-            self.cmd_vel.linear.x = self.constrain(self.cmd_vel.linear.x + LIN_VEL_STEP_SIZE, "linear")
+        if button == 'up':
+            self.cmd_vel.linear.x = CONST_LIN_VEL
+        #    self.cmd_vel.linear.x = self.constrain(self.cmd_vel.linear.x + LIN_VEL_STEP_SIZE, "linear")
 
-        elif button == 'DOWN':
-            self.cmd_vel.linear.x = self.constrain(self.cmd_vel.linear.x - LIN_VEL_STEP_SIZE, "linear")
+        elif button == 'down':
+            self.cmd_vel.linear.x = -CONST_LIN_VEL
+        #    self.cmd_vel.linear.x = self.constrain(self.cmd_vel.linear.x - LIN_VEL_STEP_SIZE, "linear")
 
-        elif button == 'LEFT':
-            self.cmd_vel.angular.z = self.constrain(self.cmd_vel.angular.z + ANG_VEL_STEP_SIZE, "angular")
+        elif button == 'left':
+            self.cmd_vel.angular.z = CONST_ANG_VEL
+        #    self.cmd_vel.angular.z = self.constrain(self.cmd_vel.angular.z + ANG_VEL_STEP_SIZE, "angular")
 
-        elif button == 'RIGHT':
-            self.cmd_vel.angular.z = self.constrain(self.cmd_vel.angular.z - ANG_VEL_STEP_SIZE, "angular") 
+        elif button == 'right':
+            self.cmd_vel.angular.z = -CONST_ANG_VEL
+        #    self.cmd_vel.angular.z = self.constrain(self.cmd_vel.angular.z - ANG_VEL_STEP_SIZE, "angular") 
 
-        elif button == 'STOP':
+        elif button == "none":
+            self.cmd_vel.linear.x = 0.0 
+            self.cmd_vel.angular.z = 0.0
+
+        elif button == 'stop':
             self.cmd_vel.linear.x = 0.0 
             self.cmd_vel.angular.z = 0.0
             print("Stopping the movement!")
             self.move.publish(self.cmd_vel)
             return
-
+        
         else:
             return
 
         print(f"Currently: linear vel {self.cmd_vel.linear.x}, angular vel {self.cmd_vel.angular.z}")
 
         self.move.publish(self.cmd_vel)
+       # self.move.publish(self.cmd_vel)
 
 
     def constrain(self, input_value, vel_type):

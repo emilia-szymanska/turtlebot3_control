@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import socket
-import time
 import rospy
 import signal
 import sys
@@ -45,45 +44,53 @@ class UDPServer:
         Run the server, let it listen and react to messages
         '''
         
-        print("UDP server up and listening")
-        
         while not rospy.is_shutdown():
 
-            # listen for incoming datagrams
-            print("waiting")
-            bytes_address_pair = self.udp_server_socket.recvfrom(BUFFER_SIZE)
-            print("something arrived")
-            message = bytes_address_pair[0].decode()
-            print(message)
-                
-            # recieved a message from the app client
-            if message == START_MSG_CLIENT:                                                    
-                print("Good message!")
-                address = bytes_address_pair[1]
-    
-                print(f"Message from Client: {message}")
-                print(f"Client IP Address: {address}")
-    
-                # sending a reply to client
-                self.udp_server_socket.sendto(BYTES_TO_SEND, address)
-
-                start = time.time()
-
-                # waiting for messages from the app (info which button is pressed)
-                while not rospy.is_shutdown():
-                    rx_command = self.udp_server_socket.recvfrom(BUFFER_SIZE)
-                    command = rx_command[0].decode()
-                    end = time.time()
-                    
-                    # app client ends the connection or doesn't send messages for a specific time 
-                    if command == END_MSG_CLIENT or end - start > MAX_TIMEOUT:     
-                        print("end of this connection")
-                        break
-                    
-                    start = end
-                    self.command.publish(command)
-
+            connected_with_client = False
             
+            try:
+                # listen for incoming datagrams
+                print("UDP server up and listening")
+                bytes_address_pair = self.udp_server_socket.recvfrom(BUFFER_SIZE)
+                message = bytes_address_pair[0].decode()
+                
+                # recieved a message from the app client
+                if message == START_MSG_CLIENT:                                                    
+                    address = bytes_address_pair[1]
+    
+                    print(f"Message from Client: {message}")
+                    print(f"Client IP Address: {address}")
+                    print(f"Message from server{MSG_FROM_SERVER}")
+                    # sending a reply to client
+                    self.udp_server_socket.sendto(BYTES_TO_SEND, address)
+                    connected_with_client = True
+                    self.udp_server_socket.settimeout(MAX_TIMEOUT)
+                
+                    while connected_with_client:
+                    
+                        try:
+                            rx_command = self.udp_server_socket.recvfrom(BUFFER_SIZE)
+                            command = rx_command[0].decode()
+                            print(command)
+                        
+                            if command == END_MSG_CLIENT:     
+                                print("Ended connection with a client on its request")
+                                connected_with_client = False
+                                break
+                    
+                            self.command.publish(command)
+                    
+                        except:
+                            print("Ended connection with a client - time out")
+                            connected_with_client = False
+                        
+                    self.udp_server_socket.settimeout(None)
+
+            except:
+                print("Caught an exception")
+                self.udp_server_socket.close()
+                sys.exit(0)
+
 
 
 if __name__ == "__main__":
