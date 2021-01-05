@@ -11,6 +11,7 @@ The reaction to the app commands are listed below:
 - _downright_: robot starts moving backwards in a circle (clockwise),
 - _upleft_: robot starts moving forwards in a circle (counterclockwise),
 - _downleft_: robot starts moving backwards in a circle (counterclockwise).
+The message _center_ doesn't result in anything specific, it is open for further implementations and extensions.
 
 ## Installation
 
