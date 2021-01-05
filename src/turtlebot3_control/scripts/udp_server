@@ -4,7 +4,7 @@ import socket
 import rospy
 import signal
 import sys
-from std_msgs.msg import String
+from std_msgs.msg import String, Int64
 
 LOCAL_IP         = "0.0.0.0"
 LOCAL_PORT       = 20001
@@ -18,13 +18,13 @@ MAX_TIMEOUT      = 20.0                              # in seconds
 
 
 class UDPServer:
-    def __init__(self):
+    def __init__(self, ip_address = LOCAL_IP, port_nr = LOCAL_PORT):
         # create a datagram socket
         self.udp_server_socket = socket.socket(family = socket.AF_INET, 
                                                 type = socket.SOCK_DGRAM)               
         
         # bind to address and ip
-        self.udp_server_socket.bind((LOCAL_IP, LOCAL_PORT))
+        self.udp_server_socket.bind((ip_address, port_nr))
         signal.signal(signal.SIGINT, self.signal_handler)
 
         self.command = rospy.Publisher('app_command', String, queue_size = 1)
@@ -53,7 +53,6 @@ class UDPServer:
                 print("UDP server up and listening")
                 bytes_address_pair = self.udp_server_socket.recvfrom(BUFFER_SIZE)
                 message = bytes_address_pair[0].decode()
-                print(message)
 
                 # recieved a message from the app client
                 if message == START_MSG_CLIENT:                                                    
@@ -61,7 +60,7 @@ class UDPServer:
     
                     print(f"Message from Client: {message}")
                     print(f"Client IP Address: {address}")
-                    print(f"Message from server{MSG_FROM_SERVER}")
+                    
                     # sending a reply to client
                     self.udp_server_socket.sendto(BYTES_TO_SEND, address)
                     connected_with_client = True
@@ -72,7 +71,6 @@ class UDPServer:
                         try:
                             rx_command = self.udp_server_socket.recvfrom(BUFFER_SIZE)
                             command = rx_command[0].decode()
-                            print(command)
                         
                             if command == END_MSG_CLIENT:     
                                 print("Ended connection with a client on its request")
@@ -97,7 +95,13 @@ class UDPServer:
 if __name__ == "__main__":
     
     rospy.init_node('udp_server')
-    udp_server = UDPServer()
+    
+    ip = rospy.get_param('~ip', LOCAL_IP)
+    port = rospy.get_param('~port', LOCAL_PORT)
+
+    print(f'IP of the server: {ip}, PORT nr: {port}')
+
+    udp_server = UDPServer(ip, port)
 
     try:
         udp_server.run()
