@@ -7,17 +7,29 @@ from std_msgs.msg import String
 BURGER_MAX_LIN_VEL = 0.22
 BURGER_MAX_ANG_VEL = 2.84
 
-CONST_ANG_VEL = 1.42
-CONST_LIN_VEL = 0.11
-
+LINEAR_PRESCALER  = 0.5
+ANGULAR_PRESCALER = 0.5
+CRICLE_LIN__PRESCALER  = 0.1
+CRICLE_ANG_PRESCALER  = 0.1
 
 class BotMover:
-    def __init__(self):
+    def __init__(self, max_lin = BURGER_MAX_LIN_VEL,
+                       ang_lin = BURGER_MAX_ANG_VEL, 
+                       lin_prescaler = LINEAR_PRESCALER, 
+                       ang_prescaler = ANGULAR_PRESCALER,
+                       circle_lin_prescaler = CIRCLE_LIN_PRESCALER,
+                       circle_ang_prescaler = CIRCLE_ANG_PRESCALER):
+
         self.move = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
         self.command = rospy.Subscriber('app_command', String, self.command_callback)
+
+        self.max_lin = max_lin
+        self.max_ang = max_ang
         
-        self.max_lin = BURGER_MAX_LIN_VEL
-        self.max_ang = BURGER_MAX_ANG_VEL
+        self.lin_prescaler        = lin_prescaler
+        self.ang_prescaler        = ang_prescaler
+        self.circle_lin_prescaler = circle_lin_prescaler
+        self.circle_ang_prescaler = circle_ang_prescaler
         
         self.cmd_vel = Twist()
         self.cmd_vel.linear.x  = 0.0
@@ -37,27 +49,44 @@ class BotMover:
         button = msg.data
         
         if button == 'up':
-            self.cmd_vel.linear.x = CONST_LIN_VEL
+            self.cmd_vel.linear.x  = self.max_lin * self.lin_prescaler
+            self.cmd_vel.angular.z = 0.0
 
         elif button == 'down':
-            self.cmd_vel.linear.x = -CONST_LIN_VEL
+            self.cmd_vel.linear.x  = -self.max_lin * self.lin_prescaler
+            self.cmd_vel.angular.z = 0.0
 
         elif button == 'left':
-            self.cmd_vel.angular.z = CONST_ANG_VEL
+            self.cmd_vel.linear.x  = 0.0 
+            self.cmd_vel.angular.z = self.max_ang * self.ang_prescaler
 
         elif button == 'right':
-            self.cmd_vel.angular.z = -CONST_ANG_VEL
+            self.cmd_vel.linear.x  = 0.0 
+            self.cmd_vel.angular.z = -self.max_ang * self.ang_prescaler
+        
+        elif button == 'upleft':
+            self.cmd_vel.linear.x  = self.max_lin * self.circle_lin_prescaler
+            self.cmd_vel.angular.z = self.max_ang * self.circle_ang_prescaler
+        
+        elif button == 'upright':
+            self.cmd_vel.linear.x  =  self.max_lin * self.circle_lin_prescaler
+            self.cmd_vel.angular.z = -self.max_ang * self.circle_ang_prescaler
+        
+        elif button == 'downleft':
+            self.cmd_vel.linear.x  = -self.max_lin * self.circle_lin_prescaler
+            self.cmd_vel.angular.z =  self.max_ang * self.circle_ang_prescaler 
+        
+        elif button == 'downright':
+            self.cmd_vel.linear.x  = -self.max_lin * self.lin_prescaler
+            self.cmd_vel.angular.z = -self.max_ang * self.circle_ang_prescaler
 
         elif button == "none":
-            self.cmd_vel.linear.x = 0.0 
+            self.cmd_vel.linear.x  = 0.0 
             self.cmd_vel.angular.z = 0.0
 
-        elif button == 'stop':
-            self.cmd_vel.linear.x = 0.0 
+        elif button == 'center':
+            self.cmd_vel.linear.x  = 0.0 
             self.cmd_vel.angular.z = 0.0
-            print("Stopping the movement!")
-            self.move.publish(self.cmd_vel)
-            return
         
         else:
             return
@@ -75,7 +104,14 @@ class BotMover:
 
 if __name__ == "__main__":
     rospy.init_node('bot_mover')
-    bot = BotMover()
+    
+    lin_pres        = rospy.get_param('~lin_prescaler', LINEAR_PRESCALER)
+    ang_pres        = rospy.get_param('~ang_prescaler', ANGULAR_PRESCALER)
+    lin_circle_pres = rospy.get_param('~lin_circle_prescaler', CIRCLE_LIN_PRESCALER)
+    ang_circle_pres = rospy.get_param('~ang_circle_prescaler', CIRCLE_ANG_PRESCALER)
+
+    bot = BotMover(BURGER_MAX_LIN_VEL, BURGER_MAX_ANG_VEL, 
+                    lin_pres, ang_pres, lin_circle_pres, ang_circle_pres)
     
     try:
         bot.run()
