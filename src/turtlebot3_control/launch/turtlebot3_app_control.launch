@@ -15,12 +15,21 @@
 
   <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_control)/simulation_requirements/urdf/turtlebot3_$(arg model).urdf.xacro" />
 
+
   <node pkg="gazebo_ros" type="spawn_model" name="spawn_urdf" args="-urdf -model turtlebot3_$(arg model) -x $(arg x_pos) -y $(arg y_pos) -z $(arg z_pos) -param robot_description" />
-  <node pkg="turtlebot3_control" type="bot_mover" name="mover" />
+
+ 
+  <node pkg="turtlebot3_control" type="bot_mover" name="mover">
+	<param name="lin_pres" value="0.7" />
+	<param name="ang_pres" value="0.5" />
+	<param name="lin_circle_pres" value="0.7" />
+	<param name="ang_circle_pres" value="0.1" />
+  </node>
+
+
   <node pkg="turtlebot3_control" type="udp_server" name="server" output="screen">
 	<param name="ip" type="str" value="0.0.0.0" />
 	<param name="port" type="int" value="20001" />
   </node>
 	
 </launch>
-

@@ -7,10 +7,10 @@ from std_msgs.msg import String
 BURGER_MAX_LIN_VEL = 0.22
 BURGER_MAX_ANG_VEL = 2.84
 
-LINEAR_PRESCALER  = 0.5
-ANGULAR_PRESCALER = 0.5
-CRICLE_LIN__PRESCALER  = 0.1
-CRICLE_ANG_PRESCALER  = 0.1
+LINEAR_PRESCALER      = 0.5  # for scaling max linear velocity
+ANGULAR_PRESCALER     = 0.5  # for scaling max angular velocity
+CRICLE_LIN__PRESCALER = 0.1  # for scaling max linear velocity in circular movement
+CRICLE_ANG_PRESCALER  = 0.1  # for scaling max angular velocity in circular movement
 
 class BotMover:
     def __init__(self, max_lin = BURGER_MAX_LIN_VEL,
