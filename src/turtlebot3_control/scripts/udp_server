@@ -16,6 +16,11 @@ BYTES_TO_SEND    = str.encode(MSG_FROM_SERVER)
 MAX_TIMEOUT      = 20.0                              # in seconds
 
 
+def close_socket_safely(socket):
+    if socket is not None and socket._closed == False:
+        socket.close()
+
+
 
 class UDPServer:
     def __init__(self, ip_address = LOCAL_IP, port_nr = LOCAL_PORT):
@@ -35,7 +40,7 @@ class UDPServer:
         Deal with ctrl+C command while the server is listening
         '''
 
-        self.udp_server_socket.close()
+        close_socket_safely(self.udp_server_socket)
         sys.exit(0)
 
 
@@ -87,7 +92,7 @@ class UDPServer:
 
             except:
                 print("Caught an exception")
-                self.udp_server_socket.close()
+                close_socket_safely(self.udp_server_socket)
                 sys.exit(0)
 
 

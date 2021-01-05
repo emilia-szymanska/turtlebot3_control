@@ -28,8 +28,8 @@
 
 
   <node pkg="turtlebot3_control" type="udp_server" name="server" output="screen">
-	<param name="ip" type="str" value="127.0.0.0" />
-	<param name="port" type="int" value="30001" />
+	<param name="ip" type="str" value="0.0.0.0" />
+	<param name="port" type="int" value="20001" />
   </node>
 	
 </launch>
