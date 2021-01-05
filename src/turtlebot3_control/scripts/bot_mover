@@ -9,12 +9,12 @@ BURGER_MAX_ANG_VEL = 2.84
 
 LINEAR_PRESCALER      = 0.5  # for scaling max linear velocity
 ANGULAR_PRESCALER     = 0.5  # for scaling max angular velocity
-CRICLE_LIN__PRESCALER = 0.1  # for scaling max linear velocity in circular movement
-CRICLE_ANG_PRESCALER  = 0.1  # for scaling max angular velocity in circular movement
+CIRCLE_LIN_PRESCALER  = 0.1  # for scaling max linear velocity in circular movement
+CIRCLE_ANG_PRESCALER  = 0.1  # for scaling max angular velocity in circular movement
 
 class BotMover:
     def __init__(self, max_lin = BURGER_MAX_LIN_VEL,
-                       ang_lin = BURGER_MAX_ANG_VEL, 
+                       max_ang = BURGER_MAX_ANG_VEL, 
                        lin_prescaler = LINEAR_PRESCALER, 
                        ang_prescaler = ANGULAR_PRESCALER,
                        circle_lin_prescaler = CIRCLE_LIN_PRESCALER,
@@ -109,6 +109,8 @@ if __name__ == "__main__":
     ang_pres        = rospy.get_param('~ang_prescaler', ANGULAR_PRESCALER)
     lin_circle_pres = rospy.get_param('~lin_circle_prescaler', CIRCLE_LIN_PRESCALER)
     ang_circle_pres = rospy.get_param('~ang_circle_prescaler', CIRCLE_ANG_PRESCALER)
+    print(f"Prescalers: linear {lin_pres}, angular {ang_pres}")
+    print(f"Prescalers for circular movement: linear {lin_circle_pres}, angular {ang_circle_pres}")
 
     bot = BotMover(BURGER_MAX_LIN_VEL, BURGER_MAX_ANG_VEL, 
                     lin_pres, ang_pres, lin_circle_pres, ang_circle_pres)
