@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <robot name="turtlebot3_burger" xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:include filename="$(find trialpkg)/urdf/common_properties.xacro"/>
-  <xacro:include filename="$(find trialpkg)/urdf/turtlebot3_burger.gazebo.xacro"/>
-
+	<xacro:include filename="$(find turtlebot3_control)/simulation_requirements/urdf/common_properties.xacro"/>
+	<xacro:include filename="$(find turtlebot3_control)/simulation_requirements/urdf/turtlebot3_burger.gazebo.xacro"/>
+  
   <link name="base_footprint"/>
 
   <joint name="base_joint" type="fixed">
@@ -15,7 +15,7 @@
     <visual>
       <origin xyz="-0.032 0 0.0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://trialpkg/meshes/bases/burger_base.stl" scale="0.001 0.001 0.001"/>
+	      <mesh filename="package://turtlebot3_control/simulation_requirements/meshes/bases/burger_base.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="light_black"/>
     </visual>
@@ -47,7 +47,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="1.57 0 0"/>
       <geometry>
-        <mesh filename="package://trialpkg/meshes/wheels/left_tire.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://turtlebot3_control/simulation_requirements/meshes/wheels/left_tire.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark"/>
     </visual>
@@ -79,7 +79,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="1.57 0 0"/>
       <geometry>
-        <mesh filename="package://trialpkg/meshes/wheels/right_tire.stl" scale="0.001 0.001 0.001"/>
+        <mesh filename="package://turtlebot3_control/simulation_requirements/meshes/wheels/right_tire.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark"/>
     </visual>
@@ -141,7 +141,7 @@
     <visual>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://trialpkg/meshes/sensors/lds.stl" scale="0.001 0.001 0.001"/>
+	      <mesh filename="package://turtlebot3_control/simulation_requirements/meshes/sensors/lds.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark"/>
     </visual>
@@ -161,5 +161,5 @@
                izz="0.001" />
     </inertial>
   </link>
-
+  
 </robot>
