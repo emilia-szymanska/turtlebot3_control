@@ -1,2 +1,0 @@
-turtlebot3_control
--DCATKIN_DEVEL_PREFIX=/home/emilia/turtlebot_control/devel -DCMAKE_INSTALL_PREFIX=/home/emilia/turtlebot_control/install -G Unix Makefiles
