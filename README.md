@@ -16,22 +16,28 @@ The message _center_ doesn't result in anything specific, it is open for further
 ## Installation
 
 The repository was built for Ubuntu 20.04 with ROS Noetic and Python3.8.
+Make sure you have ROS installed (follow the [guidelines](http://wiki.ros.org/noetic/Installation)).
 
-Clone this repo by running:
+Create a workspace, unless you have an existing one:
 ```
+mkdir -p ~/workspace_name/src
+cd ~/workspace_name/src
+catkin_init_workspace
+cd ~/workspace_name
+catkin_make
+```
+To source the workspace, run (from the root of this repository): 
+```
+cd ~/workspace_name
+source devel/setup.bash
+```
+
+Clone this package by running:
+```
+cd ~/workspace_name/src
 git clone https://github.com/emilia-szymanska/turtlebot_control.git
 ```
 
-After installing ROS, in each new terminal, run
-```
-source /opt/ros/<distro>/setup.bash
-```
-where you replace `<distro>` with the installed distribution, e.g. noetic.
-
-To source the workspace, run (from the root of this repository): 
-```
-source devel/setup.bash
-```
 The diagram shown below represents the architecture of the whole project.
 
 ![Image of Pipeline](https://github.com/emilia-szymanska/turtlebot_control/blob/master/pipeline_chart.png)
@@ -39,8 +45,9 @@ The diagram shown below represents the architecture of the whole project.
 
 ## Running the pipeline
 
-To run the whole project, put the following command in a terminal:
+To run the whole project, put the following commands in a terminal:
 ```
+cd ~/workspace_name
 roslaunch turtlebot3_control turtlebot3_app_control.launch
 ```
 
