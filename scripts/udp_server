@@ -33,6 +33,7 @@ class UDPServer:
         signal.signal(signal.SIGINT, self.signal_handler)
 
         self.command = rospy.Publisher('app_command', String, queue_size = 1)
+        self.client_info = rospy.Publisher('client_data', String, queue_size = 1)
 
 
     def signal_handler(self, signal, frame):
