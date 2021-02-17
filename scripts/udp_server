@@ -30,18 +30,21 @@ class UDPServer:
                                                 type = socket.SOCK_DGRAM)               
         self.client_address = "1.0.0.0"
 
+        self.connected_to_client = False
+        
         # bind to address and ip
         self.udp_server_socket.bind((ip_address, port_nr))
         signal.signal(signal.SIGINT, self.signal_handler)
 
         self.command = rospy.Publisher('app_command', String, queue_size = 1)
-        self.client_info = rospy.Publisher('client_flag', Bool, queue_size = 1)
+#        self.client_info = rospy.Publisher('client_flag', Bool, queue_size = 1)
         self.trial = rospy.Subscriber('x_pos', String, self.temp_callback)
 
     def temp_callback(self, message):
-        self.udp_server_socket.sendto(str.encode(message.data), self.client_address)
+        if self.connected_to_client:
+            self.udp_server_socket.sendto(str.encode(message.data), self.client_address)
         #print(self.client_address)
-        print(str.encode(message.data))
+            print(str.encode(message.data))
 
     def signal_handler(self, signal, frame):
         '''
@@ -59,7 +62,7 @@ class UDPServer:
         
         while not rospy.is_shutdown():
 
-            connected_with_client = False
+            self.connected_to_client = False
             
             try:
                 # listen for incoming datagrams
@@ -78,14 +81,14 @@ class UDPServer:
                     
                     # sending a reply to client
                     self.udp_server_socket.sendto(BYTES_TO_SEND, address)
-                    connected_with_client = True
+                    self.connected_to_client = True
                     self.udp_server_socket.settimeout(MAX_TIMEOUT)
 
-                    flag = Bool()
-                    flag.data = True
-                    self.client_info.publish(flag)
+#                    flag = Bool()
+#                    flag.data = True
+#                    self.client_info.publish(flag)
                 
-                    while connected_with_client:
+                    while self.connected_to_client:
                     
                         try:
                             rx_command = self.udp_server_socket.recvfrom(BUFFER_SIZE)
@@ -93,18 +96,18 @@ class UDPServer:
                         
                             if command == END_MSG_CLIENT:     
                                 print("Ended connection with a client on its request")
-                                flag.data = False
-                                self.client_info.publish(flag)
-                                connected_with_client = False
+#                                flag.data = False
+#                                self.client_info.publish(flag)
+                                self.connected_to_client = False
                                 break
                     
                             self.command.publish(command)
                     
                         except:
                             print("Ended connection with a client - time out")
-                            connected_with_client = False
-                            flag.data = False
-                            self.client_info.publish(flag)
+                            self.connected_to_client = False
+#                            flag.data = False
+#                            self.client_info.publish(flag)
                         
                     self.udp_server_socket.settimeout(None)
 

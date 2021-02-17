@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
+from nav_msgs.msg import Odometry
 from std_msgs.msg import String, Bool
 
 
@@ -9,12 +10,16 @@ class FeedbackThread:
         
         self.flag = False
         self.const_info = rospy.Publisher('x_pos', String, queue_size = 1)
-        self.listener = rospy.Subscriber('client_flag', Bool, self.callback)
+        self.listener = rospy.Subscriber('odom', Odometry, self.callback)
 #        self.client_info = rospy.Publisher('client_data', UdpClientData, queue_size = 1)
 
     
     def callback(self, message):
-        self.flag = message.data
+        x = str(message.pose.pose.position.x)
+        z = String()
+        z.data = x
+        self.const_info.publish(z)
+#        self.flag = message.data
 
 
     def run(self):
@@ -24,12 +29,12 @@ class FeedbackThread:
         
         while not rospy.is_shutdown():
             x = 0
-            while self.flag:
+#            while self.flag:
 #                if x % 2 == 0:
 #                    self.const_info.publish("1.27")
 #                else:
 #                    self.const_info.publish("1.30")
-                self.const_info.publish("1.30")
+#                self.const_info.publish("1.30")
 #                x += 1
 
 
