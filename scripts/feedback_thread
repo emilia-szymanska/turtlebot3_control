@@ -2,40 +2,36 @@
 
 import rospy
 from nav_msgs.msg import Odometry
-from std_msgs.msg import String, Bool
-
+from std_msgs.msg import String
+from math import atan2, degrees
 
 class FeedbackThread:
     def __init__(self):
         
-        self.flag = False
-        self.const_info = rospy.Publisher('x_pos', String, queue_size = 1)
+        self.const_info = rospy.Publisher('position_string', String, queue_size = 1)
         self.listener = rospy.Subscriber('odom', Odometry, self.callback)
-#        self.client_info = rospy.Publisher('client_data', UdpClientData, queue_size = 1)
 
     
     def callback(self, message):
-        x = str(message.pose.pose.position.x)
-        z = String()
-        z.data = x
-        self.const_info.publish(z)
-#        self.flag = message.data
+        '''
+        Convert the odometry message into a string which can be sent with a UDP
+        '''
+
+        pose = message.pose.pose.position
+        q = message.pose.pose.orientation
+        theta = degrees(atan2(2.0*(q.y*q.z + q.w*q.x), q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z))
+        string_message = String()
+        string_message.data = f"{round(pose.x, 3)},{round(pose.y, 3)},{round(theta, 3)}"
+        self.const_info.publish(string_message)
 
 
     def run(self):
         '''
-        Run the server, let it listen and react to messages
+        Keep the node running until interrupted
         '''
         
         while not rospy.is_shutdown():
-            x = 0
-#            while self.flag:
-#                if x % 2 == 0:
-#                    self.const_info.publish("1.27")
-#                else:
-#                    self.const_info.publish("1.30")
-#                self.const_info.publish("1.30")
-#                x += 1
+            rospy.spin()
 
 
 

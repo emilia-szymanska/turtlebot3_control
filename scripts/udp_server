@@ -29,7 +29,6 @@ class UDPServer:
         self.udp_server_socket = socket.socket(family = socket.AF_INET, 
                                                 type = socket.SOCK_DGRAM)               
         self.client_address = "1.0.0.0"
-
         self.connected_to_client = False
         
         # bind to address and ip
@@ -37,14 +36,14 @@ class UDPServer:
         signal.signal(signal.SIGINT, self.signal_handler)
 
         self.command = rospy.Publisher('app_command', String, queue_size = 1)
-#        self.client_info = rospy.Publisher('client_flag', Bool, queue_size = 1)
-        self.trial = rospy.Subscriber('x_pos', String, self.temp_callback)
+        self.feedback = rospy.Subscriber('position_string', String, self.send_feedback)
 
-    def temp_callback(self, message):
+
+    def send_feedback(self, message):
         if self.connected_to_client:
             self.udp_server_socket.sendto(str.encode(message.data), self.client_address)
-        #print(self.client_address)
             print(str.encode(message.data))
+
 
     def signal_handler(self, signal, frame):
         '''
@@ -84,9 +83,6 @@ class UDPServer:
                     self.connected_to_client = True
                     self.udp_server_socket.settimeout(MAX_TIMEOUT)
 
-#                    flag = Bool()
-#                    flag.data = True
-#                    self.client_info.publish(flag)
                 
                     while self.connected_to_client:
                     
@@ -96,8 +92,6 @@ class UDPServer:
                         
                             if command == END_MSG_CLIENT:     
                                 print("Ended connection with a client on its request")
-#                                flag.data = False
-#                                self.client_info.publish(flag)
                                 self.connected_to_client = False
                                 break
                     
@@ -106,8 +100,6 @@ class UDPServer:
                         except:
                             print("Ended connection with a client - time out")
                             self.connected_to_client = False
-#                            flag.data = False
-#                            self.client_info.publish(flag)
                         
                     self.udp_server_socket.settimeout(None)
 
