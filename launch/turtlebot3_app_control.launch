@@ -12,5 +12,7 @@
 	<param name="ip" type="str" value="0.0.0.0" />
 	<param name="port" type="int" value="20001" />
   </node>
+  
+  <node pkg="turtlebot3_control" type="feedback_thread" name="feedback" />
 	
 </launch>

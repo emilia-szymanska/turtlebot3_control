@@ -25,11 +25,12 @@ class FeedbackThread:
         while not rospy.is_shutdown():
             x = 0
             while self.flag:
-                if x % 2 == 0:
-                    self.const_info.publish("1.27")
-                else:
-                    self.const_info.publish("1.30")
-                x += 1
+#                if x % 2 == 0:
+#                    self.const_info.publish("1.27")
+#                else:
+#                    self.const_info.publish("1.30")
+                self.const_info.publish("1.30")
+#                x += 1
 
 
 

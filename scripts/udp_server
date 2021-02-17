@@ -5,7 +5,7 @@ import rospy
 import signal
 import sys
 from std_msgs.msg import String, Int64, Bool
-from UdpClientData.msg import UdpClientData
+#from UdpClientData.msg import UdpClientData
 
 LOCAL_IP         = "0.0.0.0"
 LOCAL_PORT       = 20001
@@ -28,7 +28,7 @@ class UDPServer:
         # create a datagram socket
         self.udp_server_socket = socket.socket(family = socket.AF_INET, 
                                                 type = socket.SOCK_DGRAM)               
-        client_address = "1.0.0.0"
+        self.client_address = "1.0.0.0"
 
         # bind to address and ip
         self.udp_server_socket.bind((ip_address, port_nr))
@@ -36,11 +36,12 @@ class UDPServer:
 
         self.command = rospy.Publisher('app_command', String, queue_size = 1)
         self.client_info = rospy.Publisher('client_flag', Bool, queue_size = 1)
-        self.trial = rospy.Subscriber('x_data', String, self.temp_callback)
+        self.trial = rospy.Subscriber('x_pos', String, self.temp_callback)
 
     def temp_callback(self, message):
-        self.udp_server_socket.sendto(str.encode(message.data), client_address)
-
+        self.udp_server_socket.sendto(str.encode(message.data), self.client_address)
+        #print(self.client_address)
+        print(str.encode(message.data))
 
     def signal_handler(self, signal, frame):
         '''
@@ -70,7 +71,7 @@ class UDPServer:
                 if message == START_MSG_CLIENT:                                                    
                     address = bytes_address_pair[1]
 
-                    client_address = address
+                    self.client_address = address
                     
                     print(f"Message from Client: {message}")
                     print(f"Client IP Address: {address}")
@@ -82,7 +83,7 @@ class UDPServer:
 
                     flag = Bool()
                     flag.data = True
-                    self.client_flag.publish(flag)
+                    self.client_info.publish(flag)
                 
                     while connected_with_client:
                     
@@ -93,7 +94,7 @@ class UDPServer:
                             if command == END_MSG_CLIENT:     
                                 print("Ended connection with a client on its request")
                                 flag.data = False
-                                self.client_flag.publish(flag)
+                                self.client_info.publish(flag)
                                 connected_with_client = False
                                 break
                     
@@ -103,12 +104,12 @@ class UDPServer:
                             print("Ended connection with a client - time out")
                             connected_with_client = False
                             flag.data = False
-                            self.client_flag.publish(flag)
+                            self.client_info.publish(flag)
                         
                     self.udp_server_socket.settimeout(None)
 
-            except:
-                print("Caught an exception")
+            except Exception as e:
+                print("Caught an exception: " + str(e))
                 close_socket_safely(self.udp_server_socket)
                 sys.exit(0)
 
