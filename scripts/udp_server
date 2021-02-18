@@ -42,7 +42,6 @@ class UDPServer:
     def send_feedback(self, message):
         if self.connected_to_client:
             self.udp_server_socket.sendto(str.encode(message.data), self.client_address)
-            print(str.encode(message.data))
 
 
     def signal_handler(self, signal, frame):

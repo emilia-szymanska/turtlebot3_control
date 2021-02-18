@@ -4,6 +4,7 @@ import rospy
 from nav_msgs.msg import Odometry
 from std_msgs.msg import String
 from math import atan2, degrees
+from tf.transformations import euler_from_quaternion
 
 class FeedbackThread:
     def __init__(self):
@@ -19,9 +20,9 @@ class FeedbackThread:
 
         pose = message.pose.pose.position
         q = message.pose.pose.orientation
-        theta = degrees(atan2(2.0*(q.y*q.z + q.w*q.x), q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z))
+        roll, pitch, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
         string_message = String()
-        string_message.data = f"{round(pose.x, 3)},{round(pose.y, 3)},{round(theta, 3)}"
+        string_message.data = "{:.2f},{:.2f},{}".format(round(pose.x, 2), round(pose.y, 2), int(round(degrees(yaw))))
         self.const_info.publish(string_message)
 
 
@@ -32,9 +33,6 @@ class FeedbackThread:
         
         while not rospy.is_shutdown():
             rospy.spin()
-
-
-
 
 
 if __name__ == "__main__":
