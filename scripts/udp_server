@@ -7,14 +7,16 @@ import sys
 from std_msgs.msg import String, Int64, Bool
 #from UdpClientData.msg import UdpClientData
 
-LOCAL_IP         = "0.0.0.0"
-LOCAL_PORT       = 20001
-BUFFER_SIZE      = 1024
-MSG_FROM_SERVER  = "OK"
-START_MSG_CLIENT = "Hello UDP server"
-END_MSG_CLIENT   = "Bye UDP server"
-BYTES_TO_SEND    = str.encode(MSG_FROM_SERVER)
-MAX_TIMEOUT      = 20.0                              # in seconds
+LOCAL_IP          = "0.0.0.0"
+LOCAL_PORT        = 20001
+BUFFER_SIZE       = 1024
+MSG_FROM_SERVER   = "OK"
+START_MSG_CLIENT  = "Hello UDP server"
+END_MSG_CLIENT    = "Bye UDP server"
+GO_TO_DESIRED_MSG = "Change to desired pose view"
+GO_TO_ARROW_MSG   = "Change to arrow view"
+BYTES_TO_SEND     = str.encode(MSG_FROM_SERVER)
+MAX_TIMEOUT       = 20.0                              # in seconds
 
 
 def close_socket_safely(socket):
@@ -30,6 +32,7 @@ class UDPServer:
                                                 type = socket.SOCK_DGRAM)               
         self.client_address = "1.0.0.0"
         self.connected_to_client = False
+        self.command_view = False
         
         # bind to address and ip
         self.udp_server_socket.bind((ip_address, port_nr))
@@ -93,8 +96,27 @@ class UDPServer:
                                 print("Ended connection with a client on its request")
                                 self.connected_to_client = False
                                 break
-                    
-                            self.command.publish(command)
+                            elif command == GO_TO_DESIRED_MSG:
+                                self.command_view = True
+                                self.udp_server_socket.settimeout(None)
+                                while self.command_view:
+                                    try:
+                                        rx_command = self.udp_server_socket.recvfrom(BUFFER_SIZE)
+                                        command = rx_command[0].decode()
+                                        if command == GO_TO_ARROW_MSG:
+                                            print("Go back to arrow commands")
+                                            self.command_view = False
+                                            self.udp_server_socket.settimeout(MAX_TIMEOUT)
+                                            break
+                                        else:
+                                            print(f"RECEIVED COMMAND {command}")
+                                    except:    
+                                        print("Ended command view - exception thrown")
+                                        self.command_view = False
+                        
+
+                            else:
+                                self.command.publish(command)
                     
                         except:
                             print("Ended connection with a client - time out")
