@@ -1,0 +1,143 @@
+#!/usr/bin/env python3
+
+import rospy
+from geometry_msgs.msg import Twist
+from std_msgs.msg import String
+from math import atan2, degrees
+from tf.transformations import euler_from_quaternion
+from numpy import sign
+
+DIST_PRECISION  = 0.01
+ANGLE_PRECISION = 1
+BURGER_STEP_ANG_VEL = 2.84 * 0.3
+BURGER_STEP_LIN_VEL = 0.22 * 0.3
+
+class DesiredPoseCommander:
+    def __init__(self):
+        
+        self.commander = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
+        self.listener  = rospy.Subscriber('desired_pose', String, self.callback)
+        self.pose_info = rospy.Subscriber('position_string', String, self.current_pose_callback)
+        
+        self.x     = 0.00
+        self.y     = 0.00
+        self.theta = 0
+
+    
+
+    def current_pose_callback(self, message):
+        pose_values = message.data.split(",")
+        self.x      = float(pose_values[0])
+        self.y      = float(pose_values[1])
+        self.theta  = int(pose_values[2])
+
+
+    def callback(self, message):
+        '''
+        Convert the desired pose message into a Twist message
+        '''
+        pose_values   = message.data.split(",")
+        desired_x     = float(pose_values[0])
+        desired_y     = float(pose_values[1])
+        desired_theta = int(pose_values[2])
+
+
+        new_theta = self.get_ang_distance(desired_x, desired_y)
+        alpha = self.theta
+        beta = new_theta
+
+        if alpha * beta > 0:
+            ang_diff = beta - alpha
+        elif abs(alpha) + abs(beta) < 180:
+            ang_diff = sign(beta) * (abs(alpha) + abs(beta))
+        else:
+            ang_diff = sign(beta) * (-2 * 180 + (abs(alpha) + abs(beta)))
+        
+        while abs(ang_diff) > ANGLE_PRECISION:
+            cmd_vel = Twist()
+            cmd_vel.linear.x  = 0.0
+            cmd_vel.linear.y  = 0.0
+            cmd_vel.linear.z  = 0.0
+            cmd_vel.angular.x = 0.0
+            cmd_vel.angular.y = 0.0
+            cmd_vel.angular.z = sign(ang_diff) * BURGER_STEP_ANG_VEL
+            
+            self.commander.publish(cmd_vel)
+
+            new_theta = self.get_ang_distance(desired_x, desired_y)
+            alpha = self.theta
+            beta = new_theta
+
+            if alpha * beta > 0:
+                ang_diff = beta - alpha
+            elif abs(alpha) + abs(beta) < 180:
+                ang_diff = sign(beta) * (abs(alpha) + abs(beta))
+            else:
+                ang_diff = sign(beta) * (-2 * 180 + (abs(alpha) + abs(beta)))
+
+
+        cmd_vel = Twist()
+        cmd_vel.linear.x  = 0.0
+        cmd_vel.linear.y  = 0.0
+        cmd_vel.linear.z  = 0.0
+        cmd_vel.angular.x = 0.0
+        cmd_vel.angular.y = 0.0
+        cmd_vel.angular.z = 0.0
+            
+        self.commander.publish(cmd_vel)
+        dist = self.get_distance(desired_x, desired_y)
+        
+        while dist > DIST_PRECISION:
+            cmd_vel = Twist()
+            cmd_vel.linear.x  = BURGER_STEP_LIN_VEL
+            cmd_vel.linear.y  = 0.0
+            cmd_vel.linear.z  = 0.0
+            cmd_vel.angular.x = 0.0
+            cmd_vel.angular.y = 0.0
+            cmd_vel.angular.z = 0.0
+            
+            self.commander.publish(cmd_vel)
+            dist = self.get_distance(desired_x, desired_y)
+
+        cmd_vel = Twist()
+        cmd_vel.linear.x  = 0.0
+        cmd_vel.linear.y  = 0.0
+        cmd_vel.linear.z  = 0.0
+        cmd_vel.angular.x = 0.0
+        cmd_vel.angular.y = 0.0
+        cmd_vel.angular.z = 0.0
+            
+        self.commander.publish(cmd_vel)
+        
+
+
+    def get_distance(self, goal_x, goal_y):
+        distance = sqrt(pow((goal_x - self.x), 2) + pow((goal_y - self.y), 2)) 
+        return distance
+
+
+    def get_ang_distance(self, goal_x, goal_y):
+        ang_distance = degrees(atan2(goal_y - self.y, goal_x - self.x))
+        return ang_distance
+
+
+    def run(self):
+        '''
+        Keep the node running until interrupted
+        '''
+        
+        while not rospy.is_shutdown():
+            rospy.spin()
+
+
+if __name__ == "__main__":
+    
+    rospy.init_node('pose_commander')
+    
+    commander = DesiredPoseCommander()
+
+    try:
+        commander.run()
+    except rospy.ROSInterruptException:
+        pass
+

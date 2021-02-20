@@ -38,8 +38,9 @@ class UDPServer:
         self.udp_server_socket.bind((ip_address, port_nr))
         signal.signal(signal.SIGINT, self.signal_handler)
 
-        self.command = rospy.Publisher('app_command', String, queue_size = 1)
-        self.feedback = rospy.Subscriber('position_string', String, self.send_feedback)
+        self.command      = rospy.Publisher('app_command', String, queue_size = 1)
+        self.desired_pose = rospy.Publisher('desired_pose', String, queue_size = 1)
+        self.feedback     = rospy.Subscriber('position_string', String, self.send_feedback)
 
 
     def send_feedback(self, message):
@@ -110,6 +111,7 @@ class UDPServer:
                                             break
                                         else:
                                             print(f"RECEIVED COMMAND {command}")
+                                            self.desired_pose.publish(command)
                                     except:    
                                         print("Ended command view - exception thrown")
                                         self.command_view = False

@@ -14,6 +14,8 @@
   </node>
   
   <node pkg="turtlebot3_control" type="feedback_thread" name="feedback" />
+  
+  <node pkg="turtlebot3_control" type="desired_pose_commander" name="pose_commander" />
 	
   <arg name="model" default="$(env TURTLEBOT3_MODEL)" doc="model type [burger, waffle, waffle_pi]"/>
   <arg name="x_pos" default="0.0"/>
