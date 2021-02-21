@@ -9,7 +9,7 @@ from numpy import sign
 
 DIST_PRECISION  = 0.05
 ANGLE_PRECISION = 1
-BURGER_STEP_ANG_VEL = 2.84 * 0.2
+BURGER_STEP_ANG_VEL = 2.84 * 0.1
 BURGER_STEP_LIN_VEL = 0.22 * 0.4
 
 class DesiredPoseCommander:
@@ -47,9 +47,9 @@ class DesiredPoseCommander:
 
         if self.set_desired_pose:
             pose_values   = message.data.split(",")
-            x     = float(pose_values[0])
-            y     = float(pose_values[1])
-            theta = int(pose_values[2])
+            current_x     = float(pose_values[0])
+            current_y     = float(pose_values[1])
+            current_theta = int(pose_values[2])
             
             cmd_vel = Twist()
             cmd_vel.linear.x  = 0.0
@@ -59,51 +59,30 @@ class DesiredPoseCommander:
             cmd_vel.angular.y = 0.0
             cmd_vel.angular.z = 0.0
         
-            dist = self.get_distance(x, y)
+            dist = self.get_distance(current_x, current_y)
             
             if dist >= DIST_PRECISION:
-                new_theta = self.get_ang_distance(x, y)
-                alpha = new_theta
-                beta = theta
+                rot_theta = self.get_ang_distance(current_x, current_y)
 
-                if alpha * beta >= 0:
-                    ang_diff = alpha - beta
-                elif alpha < 0 and beta > 0:
-                    if abs(alpha) + abs(beta) > (360 - (abs(alpha) + abs(beta))):
-                        ang_diff = 360 - (abs(alpha) + abs(beta))
+                if rot_theta * current_theta >= 0:
+                    ang_diff = rot_theta - current_theta
+                elif rot_theta < 0 and current_theta > 0:
+                    if abs(rot_theta) + abs(current_theta) > (360 - (abs(rot_theta) + abs(current_theta))):
+                        ang_diff = 360 - (abs(rot_theta) + abs(current_theta))
                     else:
-                        ang_diff = -(abs(alpha) + abs(beta))
-                elif alpha > 0 and beta < 0:
-                    if abs(alpha) + abs(beta) > (360 - (abs(alpha) + abs(beta))):
-                        ang_diff = -(360 - (abs(alpha) + abs(beta)))
+                        ang_diff = -(abs(rot_theta) + abs(current_theta))
+                elif rot_theta > 0 and current_theta < 0:
+                    if abs(rot_theta) + abs(current_theta) > (360 - (abs(rot_theta) + abs(current_theta))):
+                        ang_diff = -(360 - (abs(rot_theta) + abs(current_theta)))
                     else:
-                        ang_diff = abs(alpha) + abs(beta)
-                elif alpha == beta:
+                        ang_diff = abs(rot_theta) + abs(current_theta)
+                elif rot_theta == current_theta:
                     ang_diff = 0
 
 
                 cmd_vel.linear.x  = BURGER_STEP_LIN_VEL
                 cmd_vel.angular.z = sign(ang_diff) * BURGER_STEP_ANG_VEL
 
-#                elif abs(alpha) + abs(beta) < 180:
-#                    ang_diff = sign(beta) * (abs(alpha) + abs(beta))
-#                else:
-#                    ang_diff = sign(beta) * (-2 * 180 + (abs(alpha) + abs(beta)))
-        
-            
-#            elif abs(self.desired_theta - theta) >= ANGLE_PRECISION:
-#                alpha = theta
-#                beta = self.desired_theta
-
-#                if alpha * beta > 0:
-#                    ang_diff = beta - alpha
-#                elif abs(alpha) + abs(beta) < 180:
-#                    ang_diff = sign(beta) * (abs(alpha) + abs(beta))
-#                else:
-#                    ang_diff = sign(beta) * (-2 * 180 + (abs(alpha) + abs(beta)))
-#
-#                cmd_vel.linear.x  = 0.0
-#                cmd_vel.angular.z = sign(ang_diff) * BURGER_STEP_ANG_VEL
             
             else:
                 cmd_vel.linear.x  = 0.0
@@ -112,8 +91,6 @@ class DesiredPoseCommander:
 
             self.commander.publish(cmd_vel)
 
-            print(f"Desired theta: {beta}, current theta: {alpha}, ang_diff: {ang_diff}")
-            print(f"Desired: {self.desired_x}, {self.desired_y}, current: {x}, {y}, dist: {dist}")
         
 
 
