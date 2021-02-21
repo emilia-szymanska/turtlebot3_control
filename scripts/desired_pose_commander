@@ -3,121 +3,127 @@
 import rospy
 from geometry_msgs.msg import Twist
 from std_msgs.msg import String
-from math import atan2, degrees
+from math import atan2, degrees, sqrt
 from tf.transformations import euler_from_quaternion
 from numpy import sign
 
-DIST_PRECISION  = 0.01
+DIST_PRECISION  = 0.05
 ANGLE_PRECISION = 1
-BURGER_STEP_ANG_VEL = 2.84 * 0.3
-BURGER_STEP_LIN_VEL = 0.22 * 0.3
+BURGER_STEP_ANG_VEL = 2.84 * 0.2
+BURGER_STEP_LIN_VEL = 0.22 * 0.4
 
 class DesiredPoseCommander:
     def __init__(self):
         
         self.commander = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
-        self.listener  = rospy.Subscriber('desired_pose', String, self.callback)
+        self.listener  = rospy.Subscriber('desired_pose', String, self.desired_pose_callback)
         self.pose_info = rospy.Subscriber('position_string', String, self.current_pose_callback)
         
-        self.x     = 0.00
-        self.y     = 0.00
-        self.theta = 0
-
+        self.desired_x     = 0.00
+        self.desired_y     = 0.00
+        self.desired_theta = 0
+        
+        self.set_desired_pose = False
     
 
-    def current_pose_callback(self, message):
+
+    def desired_pose_callback(self, message):
+        self.set_desired_pose = True
         pose_values = message.data.split(",")
-        self.x      = float(pose_values[0])
-        self.y      = float(pose_values[1])
-        self.theta  = int(pose_values[2])
-
-
-    def callback(self, message):
+        try:
+            self.desired_x      = float(pose_values[0])
+            self.desired_y      = float(pose_values[1])
+            self.desired_theta  = int(pose_values[2])
+        except:
+            print("Exception while parsing string to floats and ints")
+    
+    
+    def current_pose_callback(self, message):
         '''
-        Convert the desired pose message into a Twist message
+        Convert the desired pose info into a Twist message
+        accordingly to the current pose
         '''
-        pose_values   = message.data.split(",")
-        desired_x     = float(pose_values[0])
-        desired_y     = float(pose_values[1])
-        desired_theta = int(pose_values[2])
 
 
-        new_theta = self.get_ang_distance(desired_x, desired_y)
-        alpha = self.theta
-        beta = new_theta
-
-        if alpha * beta > 0:
-            ang_diff = beta - alpha
-        elif abs(alpha) + abs(beta) < 180:
-            ang_diff = sign(beta) * (abs(alpha) + abs(beta))
-        else:
-            ang_diff = sign(beta) * (-2 * 180 + (abs(alpha) + abs(beta)))
-        
-        while abs(ang_diff) > ANGLE_PRECISION:
+        if self.set_desired_pose:
+            pose_values   = message.data.split(",")
+            x     = float(pose_values[0])
+            y     = float(pose_values[1])
+            theta = int(pose_values[2])
+            
             cmd_vel = Twist()
             cmd_vel.linear.x  = 0.0
             cmd_vel.linear.y  = 0.0
             cmd_vel.linear.z  = 0.0
             cmd_vel.angular.x = 0.0
             cmd_vel.angular.y = 0.0
-            cmd_vel.angular.z = sign(ang_diff) * BURGER_STEP_ANG_VEL
-            
-            self.commander.publish(cmd_vel)
-
-            new_theta = self.get_ang_distance(desired_x, desired_y)
-            alpha = self.theta
-            beta = new_theta
-
-            if alpha * beta > 0:
-                ang_diff = beta - alpha
-            elif abs(alpha) + abs(beta) < 180:
-                ang_diff = sign(beta) * (abs(alpha) + abs(beta))
-            else:
-                ang_diff = sign(beta) * (-2 * 180 + (abs(alpha) + abs(beta)))
-
-
-        cmd_vel = Twist()
-        cmd_vel.linear.x  = 0.0
-        cmd_vel.linear.y  = 0.0
-        cmd_vel.linear.z  = 0.0
-        cmd_vel.angular.x = 0.0
-        cmd_vel.angular.y = 0.0
-        cmd_vel.angular.z = 0.0
-            
-        self.commander.publish(cmd_vel)
-        dist = self.get_distance(desired_x, desired_y)
-        
-        while dist > DIST_PRECISION:
-            cmd_vel = Twist()
-            cmd_vel.linear.x  = BURGER_STEP_LIN_VEL
-            cmd_vel.linear.y  = 0.0
-            cmd_vel.linear.z  = 0.0
-            cmd_vel.angular.x = 0.0
-            cmd_vel.angular.y = 0.0
             cmd_vel.angular.z = 0.0
+        
+            dist = self.get_distance(x, y)
             
-            self.commander.publish(cmd_vel)
-            dist = self.get_distance(desired_x, desired_y)
+            if dist >= DIST_PRECISION:
+                new_theta = self.get_ang_distance(x, y)
+                alpha = new_theta
+                beta = theta
 
-        cmd_vel = Twist()
-        cmd_vel.linear.x  = 0.0
-        cmd_vel.linear.y  = 0.0
-        cmd_vel.linear.z  = 0.0
-        cmd_vel.angular.x = 0.0
-        cmd_vel.angular.y = 0.0
-        cmd_vel.angular.z = 0.0
+                if alpha * beta >= 0:
+                    ang_diff = alpha - beta
+                elif alpha < 0 and beta > 0:
+                    if abs(alpha) + abs(beta) > (360 - (abs(alpha) + abs(beta))):
+                        ang_diff = 360 - (abs(alpha) + abs(beta))
+                    else:
+                        ang_diff = -(abs(alpha) + abs(beta))
+                elif alpha > 0 and beta < 0:
+                    if abs(alpha) + abs(beta) > (360 - (abs(alpha) + abs(beta))):
+                        ang_diff = -(360 - (abs(alpha) + abs(beta)))
+                    else:
+                        ang_diff = abs(alpha) + abs(beta)
+                elif alpha == beta:
+                    ang_diff = 0
+
+
+                cmd_vel.linear.x  = BURGER_STEP_LIN_VEL
+                cmd_vel.angular.z = sign(ang_diff) * BURGER_STEP_ANG_VEL
+
+#                elif abs(alpha) + abs(beta) < 180:
+#                    ang_diff = sign(beta) * (abs(alpha) + abs(beta))
+#                else:
+#                    ang_diff = sign(beta) * (-2 * 180 + (abs(alpha) + abs(beta)))
+        
             
-        self.commander.publish(cmd_vel)
+#            elif abs(self.desired_theta - theta) >= ANGLE_PRECISION:
+#                alpha = theta
+#                beta = self.desired_theta
+
+#                if alpha * beta > 0:
+#                    ang_diff = beta - alpha
+#                elif abs(alpha) + abs(beta) < 180:
+#                    ang_diff = sign(beta) * (abs(alpha) + abs(beta))
+#                else:
+#                    ang_diff = sign(beta) * (-2 * 180 + (abs(alpha) + abs(beta)))
+#
+#                cmd_vel.linear.x  = 0.0
+#                cmd_vel.angular.z = sign(ang_diff) * BURGER_STEP_ANG_VEL
+            
+            else:
+                cmd_vel.linear.x  = 0.0
+                cmd_vel.angular.z = 0.0
+
+
+            self.commander.publish(cmd_vel)
+
+            print(f"Desired theta: {beta}, current theta: {alpha}, ang_diff: {ang_diff}")
+            print(f"Desired: {self.desired_x}, {self.desired_y}, current: {x}, {y}, dist: {dist}")
         
 
 
-    def get_distance(self, goal_x, goal_y):
-        distance = sqrt(pow((goal_x - self.x), 2) + pow((goal_y - self.y), 2)) 
+    def get_distance(self, current_x, current_y):
+        distance = sqrt(pow((self.desired_x - current_x), 2) + pow((self.desired_y - current_y), 2)) 
         return distance
 
 
-    def get_ang_distance(self, goal_x, goal_y):
-        ang_distance = degrees(atan2(goal_y - self.y, goal_x - self.x))
+    def get_ang_distance(self, current_x, current_y):
+        ang_distance = degrees(atan2(self.desired_y - current_y, self.desired_x - current_x))
         return ang_distance
 
 
