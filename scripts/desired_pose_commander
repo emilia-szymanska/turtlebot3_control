@@ -82,6 +82,26 @@ class DesiredPoseCommander:
 
                 cmd_vel.linear.x  = BURGER_STEP_LIN_VEL
                 cmd_vel.angular.z = sign(ang_diff) * BURGER_STEP_ANG_VEL
+            
+            elif self.desired_theta >= ANGLE_PRECISION:
+                if self.desired_theta * current_theta >= 0:
+                    ang_diff = self.desired_theta - current_theta
+                elif self.desired_theta < 0 and current_theta > 0:
+                    if abs(self.desired_theta) + abs(current_theta) > (360 - (abs(self.desired_theta) + abs(current_theta))):
+                        ang_diff = 360 - (abs(self.desired_theta) + abs(current_theta))
+                    else:
+                        ang_diff = -(abs(self.desired_theta) + abs(current_theta))
+                elif self.desired_theta > 0 and current_theta < 0:
+                    if abs(self.desired_theta) + abs(current_theta) > (360 - (abs(self.desired_theta) + abs(current_theta))):
+                        ang_diff = -(360 - (abs(self.desired_theta) + abs(current_theta)))
+                    else:
+                        ang_diff = abs(self.desired_theta) + abs(current_theta)
+                elif self.desired_theta == current_theta:
+                    ang_diff = 0
+
+
+                cmd_vel.linear.x  = 0.0
+                cmd_vel.angular.z = sign(ang_diff) * BURGER_STEP_ANG_VEL
 
             
             else:
