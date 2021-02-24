@@ -40,6 +40,7 @@ class UDPServer:
 
         self.command      = rospy.Publisher('app_command', String, queue_size = 1)
         self.desired_pose = rospy.Publisher('desired_pose', String, queue_size = 1)
+        self.quit_desired = rospy.Publisher('quit_desired_pose', Bool, queue_size = 1)
         self.feedback     = rospy.Subscriber('position_string', String, self.send_feedback)
 
 
@@ -108,6 +109,7 @@ class UDPServer:
                                             print("Go back to arrow commands")
                                             self.command_view = False
                                             self.udp_server_socket.settimeout(MAX_TIMEOUT)
+                                            self.quit_desired.publish(True)
                                             break
                                         else:
                                             print(f"RECEIVED COMMAND {command}")

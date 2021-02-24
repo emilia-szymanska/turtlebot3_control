@@ -2,7 +2,7 @@
 
 import rospy
 from geometry_msgs.msg import Twist
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from math import atan2, degrees, sqrt
 from tf.transformations import euler_from_quaternion
 from numpy import sign
@@ -15,9 +15,10 @@ BURGER_STEP_LIN_VEL = 0.22 * 0.4
 class DesiredPoseCommander:
     def __init__(self):
         
-        self.commander = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
-        self.listener  = rospy.Subscriber('desired_pose', String, self.desired_pose_callback)
-        self.pose_info = rospy.Subscriber('position_string', String, self.current_pose_callback)
+        self.commander    = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
+        self.listener     = rospy.Subscriber('desired_pose', String, self.desired_pose_callback)
+        self.pose_info    = rospy.Subscriber('position_string', String, self.current_pose_callback)
+        self.quit_desired = rospy.Subscriber('quit_desired_pose', Bool, self.quit_pose_setting_callback)
         
         self.desired_x     = 0.00
         self.desired_y     = 0.00
@@ -36,6 +37,11 @@ class DesiredPoseCommander:
             self.desired_theta  = int(pose_values[2])
         except:
             print("Exception while parsing string to floats and ints")
+    
+
+    def quit_pose_setting_callback(self, message):
+        if message.data == True:
+            self.set_desired_pose = False
     
     
     def current_pose_callback(self, message):
