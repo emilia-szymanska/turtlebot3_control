@@ -13,6 +13,6 @@
 	<param name="port" type="int" value="20001" />
   </node>
   
-  <node pkg="turtlebot3_control" type="feedback_thread" name="feedback" />
+  <node pkg="turtlebot3_control" type="position_feedback" name="feedback" />
 	
 </launch>

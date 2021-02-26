@@ -13,10 +13,10 @@ BUFFER_SIZE       = 1024
 MSG_FROM_SERVER   = "OK"
 START_MSG_CLIENT  = "Hello UDP server"
 END_MSG_CLIENT    = "Bye UDP server"
-GO_TO_DESIRED_MSG = "Change to desired pose view"
+GO_TO_DESIRED_MSG = "Change to autonomous ride view"
 GO_TO_ARROW_MSG   = "Change to arrow view"
 BYTES_TO_SEND     = str.encode(MSG_FROM_SERVER)
-MAX_TIMEOUT       = 20.0                              # in seconds
+MAX_TIMEOUT       = 10.0                              # in seconds
 
 
 def close_socket_safely(socket):
@@ -38,6 +38,7 @@ class UDPServer:
         self.udp_server_socket.bind((ip_address, port_nr))
         signal.signal(signal.SIGINT, self.signal_handler)
 
+        # subscribers and publishers
         self.command      = rospy.Publisher('app_command', String, queue_size = 1)
         self.desired_pose = rospy.Publisher('desired_pose', String, queue_size = 1)
         self.quit_desired = rospy.Publisher('quit_desired_pose', Bool, queue_size = 1)
@@ -45,6 +46,10 @@ class UDPServer:
 
 
     def send_feedback(self, message):
+        '''
+        Send the feedback of X, Y and Theta positions to the client
+        '''
+
         if self.connected_to_client:
             self.udp_server_socket.sendto(str.encode(message.data), self.client_address)
 
@@ -57,6 +62,65 @@ class UDPServer:
         close_socket_safely(self.udp_server_socket)
         sys.exit(0)
 
+    
+    def handle_desired_pose_msgs(self):
+        '''
+        Take care of messages coming from a desired position view -
+        - publish to an according topic or quit when needed
+        '''
+
+        self.udp_server_socket.settimeout(None)
+        self.command_view = True
+        while self.command_view:
+            try:
+                rx_command = self.udp_server_socket.recvfrom(BUFFER_SIZE)
+                command = rx_command[0].decode()
+                
+                if command == GO_TO_ARROW_MSG:
+                    print("Go back to arrow commands")
+                    self.command_view = False
+                    self.udp_server_socket.settimeout(MAX_TIMEOUT)
+                    self.quit_desired.publish(True)
+                else:
+                    print(f"RECEIVED COMMAND {command}")
+                    self.desired_pose.publish(command)
+            except:    
+                print("Ended command view - exception thrown")
+                self.command_view = False
+        return
+
+
+    def handle_proper_client_msgs(self):
+        '''
+        Take care of messages coming from the proper client -
+        - publish arrow commands to an according topic, change 
+        the mode of work or quit when needed
+        '''
+        
+        self.connected_to_client = True
+        self.udp_server_socket.settimeout(MAX_TIMEOUT)
+
+        while self.connected_to_client:        
+            try:
+                rx_command = self.udp_server_socket.recvfrom(BUFFER_SIZE)
+                command = rx_command[0].decode()
+                        
+                if command == END_MSG_CLIENT:     
+                    print("Ended connection with a client on its request")
+                    self.connected_to_client = False
+                    return
+                elif command == GO_TO_DESIRED_MSG:
+                    self.handle_desired_pose_msgs()
+                else:
+                    self.command.publish(command)
+                    
+            except:
+                print("Ended connection with a client - time out")
+                self.connected_to_client = False
+        
+        self.udp_server_socket.settimeout(None)
+        return
+
 
     def run(self):
         '''
@@ -64,9 +128,6 @@ class UDPServer:
         '''
         
         while not rospy.is_shutdown():
-
-            self.connected_to_client = False
-            
             try:
                 # listen for incoming datagrams
                 print("UDP server up and listening")
@@ -76,57 +137,14 @@ class UDPServer:
                 # recieved a message from the app client
                 if message == START_MSG_CLIENT:                                                    
                     address = bytes_address_pair[1]
-
                     self.client_address = address
                     
                     print(f"Message from Client: {message}")
                     print(f"Client IP Address: {address}")
                     
-                    # sending a reply to client
+                    # sending a reply to client and taking care of the messages
                     self.udp_server_socket.sendto(BYTES_TO_SEND, address)
-                    self.connected_to_client = True
-                    self.udp_server_socket.settimeout(MAX_TIMEOUT)
-
-                
-                    while self.connected_to_client:
-                    
-                        try:
-                            rx_command = self.udp_server_socket.recvfrom(BUFFER_SIZE)
-                            command = rx_command[0].decode()
-                        
-                            if command == END_MSG_CLIENT:     
-                                print("Ended connection with a client on its request")
-                                self.connected_to_client = False
-                                break
-                            elif command == GO_TO_DESIRED_MSG:
-                                self.command_view = True
-                                self.udp_server_socket.settimeout(None)
-                                while self.command_view:
-                                    try:
-                                        rx_command = self.udp_server_socket.recvfrom(BUFFER_SIZE)
-                                        command = rx_command[0].decode()
-                                        if command == GO_TO_ARROW_MSG:
-                                            print("Go back to arrow commands")
-                                            self.command_view = False
-                                            self.udp_server_socket.settimeout(MAX_TIMEOUT)
-                                            self.quit_desired.publish(True)
-                                            break
-                                        else:
-                                            print(f"RECEIVED COMMAND {command}")
-                                            self.desired_pose.publish(command)
-                                    except:    
-                                        print("Ended command view - exception thrown")
-                                        self.command_view = False
-                        
-
-                            else:
-                                self.command.publish(command)
-                    
-                        except:
-                            print("Ended connection with a client - time out")
-                            self.connected_to_client = False
-                        
-                    self.udp_server_socket.settimeout(None)
+                    self.handle_proper_client_msgs()
 
             except Exception as e:
                 print("Caught an exception: " + str(e))
@@ -139,12 +157,10 @@ if __name__ == "__main__":
     
     rospy.init_node('udp_server')
     
-    ip = rospy.get_param('~ip', LOCAL_IP)
-    port = rospy.get_param('~port', LOCAL_PORT)
-
-    print(f'IP of the server: {ip}, PORT nr: {port}')
-
+    ip         = rospy.get_param('~ip', LOCAL_IP)
+    port       = rospy.get_param('~port', LOCAL_PORT)
     udp_server = UDPServer(ip, port)
+    print(f'IP of the server: {ip}, PORT nr: {port}')
 
     try:
         udp_server.run()

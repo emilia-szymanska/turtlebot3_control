@@ -6,14 +6,14 @@ from std_msgs.msg import String
 from math import atan2, degrees
 from tf.transformations import euler_from_quaternion
 
-class FeedbackThread:
+class PositionFeedback:
     def __init__(self):
         
-        self.const_info = rospy.Publisher('position_string', String, queue_size = 1)
-        self.listener = rospy.Subscriber('odom', Odometry, self.callback)
+        self.feedback_string = rospy.Publisher('position_string', String, queue_size = 1)
+        self.odom_listener   = rospy.Subscriber('odom', Odometry, self.odom_callback)
 
     
-    def callback(self, message):
+    def odom_callback(self, message):
         '''
         Convert the odometry message into a string which can be sent with a UDP
         '''
@@ -23,7 +23,7 @@ class FeedbackThread:
         roll, pitch, yaw = euler_from_quaternion([q.x, q.y, q.z, q.w])
         string_message = String()
         string_message.data = "{:.2f},{:.2f},{}".format(round(pose.x, 2), round(pose.y, 2), int(round(degrees(yaw))))
-        self.const_info.publish(string_message)
+        self.feedback_string.publish(string_message)
 
 
     def run(self):
@@ -38,8 +38,7 @@ class FeedbackThread:
 if __name__ == "__main__":
     
     rospy.init_node('feedback')
-    
-    feedback = FeedbackThread()
+    feedback = PositionFeedback()
 
     try:
         feedback.run()

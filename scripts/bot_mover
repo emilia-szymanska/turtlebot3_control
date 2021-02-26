@@ -20,7 +20,7 @@ class BotMover:
                        circle_lin_prescaler = CIRCLE_LIN_PRESCALER,
                        circle_ang_prescaler = CIRCLE_ANG_PRESCALER):
 
-        self.move = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
+        self.move    = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
         self.command = rospy.Subscriber('app_command', String, self.command_callback)
 
         self.max_lin = max_lin
@@ -83,20 +83,20 @@ class BotMover:
         elif button == "none":
             self.cmd_vel.linear.x  = 0.0 
             self.cmd_vel.angular.z = 0.0
-
-        elif button == 'center':
-            self.cmd_vel.linear.x  = 0.0 
-            self.cmd_vel.angular.z = 0.0
         
         else:
             return
 
-        print(f"Currently: linear vel {self.cmd_vel.linear.x}, angular vel {self.cmd_vel.angular.z}")
+        print(f"Current command: linear vel {round(self.cmd_vel.linear.x, 2)}, angular vel {round(self.cmd_vel.angular.z, 2)}")
 
         self.move.publish(self.cmd_vel)
 
 
     def run(self):
+        '''
+        Keep the node spinning
+        '''
+
         while not rospy.is_shutdown():
             rospy.spin()
 

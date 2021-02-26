@@ -7,18 +7,18 @@ from math import atan2, degrees, sqrt
 from tf.transformations import euler_from_quaternion
 from numpy import sign
 
-DIST_PRECISION  = 0.05
-ANGLE_PRECISION = 1
+DIST_PRECISION      = 0.03
+ANGLE_PRECISION     = 1
 BURGER_STEP_ANG_VEL = 2.84 * 0.1
 BURGER_STEP_LIN_VEL = 0.22 * 0.4
 
 class DesiredPoseCommander:
     def __init__(self):
         
-        self.commander    = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
-        self.listener     = rospy.Subscriber('desired_pose', String, self.desired_pose_callback)
-        self.pose_info    = rospy.Subscriber('position_string', String, self.current_pose_callback)
-        self.quit_desired = rospy.Subscriber('quit_desired_pose', Bool, self.quit_pose_setting_callback)
+        self.commander             = rospy.Publisher('cmd_vel', Twist, queue_size = 1)
+        self.desired_pose_listener = rospy.Subscriber('desired_pose', String, self.desired_pose_callback)
+        self.string_feedback       = rospy.Subscriber('position_string', String, self.current_pose_callback)
+        self.quit_desired          = rospy.Subscriber('quit_desired_pose', Bool, self.quit_pose_setting_callback)
         
         self.desired_x     = 0.00
         self.desired_y     = 0.00
@@ -27,8 +27,12 @@ class DesiredPoseCommander:
         self.set_desired_pose = False
     
 
-
     def desired_pose_callback(self, message):
+        '''
+        Set the values of the desired position and the according
+        flag to true to allow the ride
+        '''
+
         self.set_desired_pose = True
         pose_values = message.data.split(",")
         try:
@@ -40,6 +44,11 @@ class DesiredPoseCommander:
     
 
     def quit_pose_setting_callback(self, message):
+        '''
+        Set the flag to False if there is no need to reach the
+        desired position anymore
+        '''
+
         if message.data == True:
             self.set_desired_pose = False
     
@@ -49,7 +58,6 @@ class DesiredPoseCommander:
         Convert the desired pose info into a Twist message
         accordingly to the current pose
         '''
-
 
         if self.set_desired_pose:
             pose_values   = message.data.split(",")
@@ -104,7 +112,7 @@ class DesiredPoseCommander:
                         ang_diff = abs(self.desired_theta) + abs(current_theta)
                 elif self.desired_theta == current_theta:
                     ang_diff = 0
-
+                print(ang_diff)
 
                 cmd_vel.linear.x  = 0.0
                 cmd_vel.angular.z = sign(ang_diff) * BURGER_STEP_ANG_VEL
@@ -121,11 +129,20 @@ class DesiredPoseCommander:
 
 
     def get_distance(self, current_x, current_y):
+        '''
+        Calculate the distance between the desired and the current position
+        '''
+
         distance = sqrt(pow((self.desired_x - current_x), 2) + pow((self.desired_y - current_y), 2)) 
         return distance
 
 
     def get_ang_distance(self, current_x, current_y):
+        '''
+        Calculate the theta that has to be set for the robot to face the 
+        desired position from the current position
+        '''
+        
         ang_distance = degrees(atan2(self.desired_y - current_y, self.desired_x - current_x))
         return ang_distance
 
@@ -141,8 +158,7 @@ class DesiredPoseCommander:
 
 if __name__ == "__main__":
     
-    rospy.init_node('pose_commander')
-    
+    rospy.init_node('pose_commander')    
     commander = DesiredPoseCommander()
 
     try:
