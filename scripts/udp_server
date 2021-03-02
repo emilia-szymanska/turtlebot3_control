@@ -108,7 +108,6 @@ class UDPServer:
                 if command == END_MSG_CLIENT:     
                     print("Ended connection with a client on its request")
                     self.connected_to_client = False
-                    return
                 elif command == GO_TO_DESIRED_MSG:
                     self.handle_desired_pose_msgs()
                 else:
