@@ -3,7 +3,7 @@
 import rospy
 from geometry_msgs.msg import Twist
 from std_msgs.msg import String, Bool
-from math import atan2, degrees, sqrt
+from math import atan2, degrees, radians, sqrt, tanh
 from tf.transformations import euler_from_quaternion
 from numpy import sign
 
@@ -95,7 +95,7 @@ class DesiredPoseCommander:
 
 
                 cmd_vel.linear.x  = BURGER_STEP_LIN_VEL
-                cmd_vel.angular.z = sign(ang_diff) * BURGER_STEP_ANG_VEL
+                cmd_vel.angular.z = tanh(radians(ang_diff)) * BURGER_STEP_ANG_VEL
             
             elif self.desired_theta >= ANGLE_PRECISION:
                 if self.desired_theta * current_theta >= 0:
@@ -115,7 +115,7 @@ class DesiredPoseCommander:
                 print(ang_diff)
 
                 cmd_vel.linear.x  = 0.0
-                cmd_vel.angular.z = sign(ang_diff) * BURGER_STEP_ANG_VEL
+                cmd_vel.angular.z = tanh(radians(ang_diff)) * BURGER_STEP_ANG_VEL
 
             
             else:
