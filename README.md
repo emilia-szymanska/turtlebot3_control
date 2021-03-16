@@ -11,7 +11,9 @@ The reaction to the app commands are listed below:
 - _downright_: robot starts moving backwards in a circle (clockwise),
 - _upleft_: robot starts moving forwards in a circle (counterclockwise),
 - _downleft_: robot starts moving backwards in a circle (counterclockwise).
-The message _center_ doesn't result in anything specific, it is open for further implementations and extensions.
+- _center_: change to the "autonomous" ride mode.
+
+Tha last option allows the user to specify the desired pose, which is then achieved by the robot on its own. 
 
 ## Installation
 
@@ -38,6 +40,12 @@ cd ~/workspace_name/src
 git clone https://github.com/emilia-szymanska/turtlebot_control.git
 ```
 
+Make sure that your workspace after applying major changes is built:
+```
+cd ~/workspace_name
+catkin_make
+```
+
 The diagram shown below represents the architecture of the whole project.
 
 ![Image of Pipeline](https://github.com/emilia-szymanska/turtlebot_control/blob/master/pipeline_chart.png)
@@ -45,18 +53,24 @@ The diagram shown below represents the architecture of the whole project.
 
 ## Running the pipeline
 
-To run the whole project, put the following commands in a terminal:
+To run the whole project (for a real Turtlebot3), put the following commands in a terminal:
 ```
 cd ~/workspace_name
 roslaunch turtlebot3_control turtlebot3_app_control.launch
+```
+In case of a lack of a real Turtlebot3, replace the launch command with the following one to open a Gazebo simulation:
+```
+roslaunch turtlebot3_control turtlebot3_gazebo_control.launch
 ```
 
 ## Contents    
 
 The package `turtlebot3_control` contains:
 
-- `udp_server` node (python): create a UDP server to receive commands from a client;
-- `bot_mover` node (python): publish messages on cmd\_vel topic based on commands received from the server.  
+- `udp_server` node (Python3): creates a UDP server to receive commands from a client and sending back position feedback messages;
+- `bot_mover` node (Python3): publishes messages on cmd\_vel topic based on commands received from the server;
+- `desired_pose_commander` node (Python3): controls velocity commands based on the current and desired robot's position if the latter is specified by the user;
+- `position_feedback` node (Python3): transforms the data from odometry messages to a user-friendly "x, y $\theta$" string data format.
 
 Both nodes have their parameters. For `udp_server` you can set an IP and a PORT.
 Example:
@@ -68,6 +82,10 @@ As for a `bot_mover`, you can set:
 - linear and angular circle scaling (these cause a similar action as above, but are valid only for a circular movement - when the bot receives commands such as upleft, upright, downleft, downright).
 
 The parameters are set in the launch file, but also have some default values implemented.
+
+## Performance
+
+The video presenting the perfomance of the package alongside with Android application in the [laboratory](https://lamor.fer.hr/) can be found [here](https://youtu.be/YFx6O14_POA).  
 
 ## Credits
 
