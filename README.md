@@ -48,7 +48,8 @@ catkin_make
 
 The diagram shown below represents the architecture of the whole project.
 
-![Image of Pipeline](https://github.com/emilia-szymanska/turtlebot_control/blob/master/pipeline_chart.png)
+![turtlebot3_control_background](https://user-images.githubusercontent.com/58346361/111316164-502ddf80-8663-11eb-90cd-2ef59fe28680.png)
+
 
 
 ## Running the pipeline
@@ -70,7 +71,7 @@ The package `turtlebot3_control` contains:
 - `udp_server` node (Python3): creates a UDP server to receive commands from a client and sending back position feedback messages;
 - `bot_mover` node (Python3): publishes messages on cmd\_vel topic based on commands received from the server;
 - `desired_pose_commander` node (Python3): controls velocity commands based on the current and desired robot's position if the latter is specified by the user;
-- `position_feedback` node (Python3): transforms the data from odometry messages to a user-friendly "x, y $\theta$" string data format.
+- `position_feedback` node (Python3): transforms the data from odometry messages to a user-friendly "x, y, theta" string data format.
 
 Both nodes have their parameters. For `udp_server` you can set an IP and a PORT.
 Example:
