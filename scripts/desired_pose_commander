@@ -11,6 +11,7 @@ DIST_PRECISION      = 0.03
 ANGLE_PRECISION     = 1
 BURGER_STEP_ANG_VEL = 2.84 * 0.1
 BURGER_STEP_LIN_VEL = 0.22 * 0.4
+TANH_PARAM          = 5
 
 class DesiredPoseCommander:
     def __init__(self):
@@ -95,7 +96,7 @@ class DesiredPoseCommander:
 
 
                 cmd_vel.linear.x  = BURGER_STEP_LIN_VEL
-                cmd_vel.angular.z = tanh(radians(ang_diff)) * BURGER_STEP_ANG_VEL
+                cmd_vel.angular.z = tanh(TANH_PARAM * radians(ang_diff)) * BURGER_STEP_ANG_VEL
             
             elif self.desired_theta >= ANGLE_PRECISION:
                 if self.desired_theta * current_theta >= 0:
@@ -115,7 +116,7 @@ class DesiredPoseCommander:
                 print(ang_diff)
 
                 cmd_vel.linear.x  = 0.0
-                cmd_vel.angular.z = tanh(radians(ang_diff)) * BURGER_STEP_ANG_VEL
+                cmd_vel.angular.z = tanh(TANH_PARAM * radians(ang_diff)) * BURGER_STEP_ANG_VEL
 
             
             else:
