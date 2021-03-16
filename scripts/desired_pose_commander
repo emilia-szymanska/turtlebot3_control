@@ -13,6 +13,8 @@ BURGER_STEP_ANG_VEL = 2.84 * 0.1
 BURGER_STEP_LIN_VEL = 0.22 * 0.4
 TANH_PARAM          = 5
 
+
+
 class DesiredPoseCommander:
     def __init__(self):
         
@@ -75,59 +77,25 @@ class DesiredPoseCommander:
             cmd_vel.angular.z = 0.0
         
             dist = self.get_distance(current_x, current_y)
-            
+            theta_diff = get_ang_difference(self.desired_theta, current_theta)
+            print(theta_diff) 
             if dist >= DIST_PRECISION:
                 rot_theta = self.get_ang_distance(current_x, current_y)
-
-                if rot_theta * current_theta >= 0:
-                    ang_diff = rot_theta - current_theta
-                elif rot_theta < 0 and current_theta > 0:
-                    if abs(rot_theta) + abs(current_theta) > (360 - (abs(rot_theta) + abs(current_theta))):
-                        ang_diff = 360 - (abs(rot_theta) + abs(current_theta))
-                    else:
-                        ang_diff = -(abs(rot_theta) + abs(current_theta))
-                elif rot_theta > 0 and current_theta < 0:
-                    if abs(rot_theta) + abs(current_theta) > (360 - (abs(rot_theta) + abs(current_theta))):
-                        ang_diff = -(360 - (abs(rot_theta) + abs(current_theta)))
-                    else:
-                        ang_diff = abs(rot_theta) + abs(current_theta)
-                elif rot_theta == current_theta:
-                    ang_diff = 0
-
-
+                ang_diff = get_ang_difference(rot_theta, current_theta)
                 cmd_vel.linear.x  = BURGER_STEP_LIN_VEL
                 cmd_vel.angular.z = tanh(TANH_PARAM * radians(ang_diff)) * BURGER_STEP_ANG_VEL
             
-            elif abs(self.desired_theta - current_theta) >= ANGLE_PRECISION:
-                if self.desired_theta * current_theta >= 0:
-                    ang_diff = self.desired_theta - current_theta
-                elif self.desired_theta < 0 and current_theta > 0:
-                    if abs(self.desired_theta) + abs(current_theta) > (360 - (abs(self.desired_theta) + abs(current_theta))):
-                        ang_diff = 360 - (abs(self.desired_theta) + abs(current_theta))
-                    else:
-                        ang_diff = -(abs(self.desired_theta) + abs(current_theta))
-                elif self.desired_theta > 0 and current_theta < 0:
-                    if abs(self.desired_theta) + abs(current_theta) > (360 - (abs(self.desired_theta) + abs(current_theta))):
-                        ang_diff = -(360 - (abs(self.desired_theta) + abs(current_theta)))
-                    else:
-                        ang_diff = abs(self.desired_theta) + abs(current_theta)
-                elif self.desired_theta == current_theta:
-                    ang_diff = 0
-
+            elif abs(theta_diff) >= ANGLE_PRECISION:
                 cmd_vel.linear.x  = 0.0
-                cmd_vel.angular.z = tanh(TANH_PARAM * radians(ang_diff)) * BURGER_STEP_ANG_VEL
-
+                cmd_vel.angular.z = tanh(TANH_PARAM * radians(theta_diff)) * BURGER_STEP_ANG_VEL
             
             else:
                 cmd_vel.linear.x  = 0.0
                 cmd_vel.angular.z = 0.0
 
-
             self.commander.publish(cmd_vel)
 
         
-
-
     def get_distance(self, current_x, current_y):
         '''
         Calculate the distance between the desired and the current position
@@ -146,7 +114,7 @@ class DesiredPoseCommander:
         ang_distance = degrees(atan2(self.desired_y - current_y, self.desired_x - current_x))
         return ang_distance
 
-
+    
     def run(self):
         '''
         Keep the node running until interrupted
@@ -154,6 +122,35 @@ class DesiredPoseCommander:
         
         while not rospy.is_shutdown():
             rospy.spin()
+
+
+###################################################
+####### additional function #######################
+
+def get_ang_difference(desired, current):
+    '''
+    Calculate the angular difference between two angles 
+    (the desired theta and the current one) 
+    '''
+
+    if desired * current >= 0:
+        ang_diff = desired - current
+    elif desired < 0 and current > 0:
+        if abs(desired) + abs(current) > (360 - (abs(desired) + abs(current))):
+            ang_diff = 360 - (abs(desired) + abs(current))
+        else:
+            ang_diff = -(abs(desired) + abs(current))
+    elif desired > 0 and current < 0:
+        if abs(desired) + abs(current) > (360 - (abs(desired) + abs(current))):
+            ang_diff = -(360 - (abs(desired) + abs(current)))
+        else:
+            ang_diff = abs(desired) + abs(current)
+    elif desired == current:
+        ang_diff = 0
+        
+    return ang_diff
+
+##################################################
 
 
 if __name__ == "__main__":
