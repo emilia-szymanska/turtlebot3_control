@@ -78,7 +78,7 @@ class DesiredPoseCommander:
         
             dist = self.get_distance(current_x, current_y)
             theta_diff = get_ang_difference(self.desired_theta, current_theta)
-            print(theta_diff) 
+            
             if dist >= DIST_PRECISION:
                 rot_theta = self.get_ang_distance(current_x, current_y)
                 ang_diff = get_ang_difference(rot_theta, current_theta)

@@ -1,2 +1,0 @@
-string client_address
-uint32 client_port

@@ -8,30 +8,15 @@ find_package(catkin REQUIRED COMPONENTS
   gazebo_ros
   rospy
   std_msgs
-  message_generation
-)
-
-add_message_files(
-  FILES
-  UdpClientData.msg
-)
-
-generate_messages(
-  DEPENDENCIES
-  std_msgs
 )
 
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES turtlebot3_control
-  CATKIN_DEPENDS gazebo_ros rospy message_runtime
-#  DEPENDS system_lib
+  CATKIN_DEPENDS gazebo_ros rospy 
 )
 
 include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
 )
-
 
 
